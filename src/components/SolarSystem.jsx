@@ -2,30 +2,28 @@ import { useRef, useEffect, useState } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
-// import * as dat from "dat.gui"; // Dynamically import in useEffect to reduce bundle size
 
-// Map your available textures
+// Map your available textures (all lowercase)
 const PLANET_TEXTURES = {
-  Mercury: "/textures/mercury.jpg",
-  Venus: "/textures/venus.jpg",
-  Earth: "/textures/earth.jpg",
-  Mars: "/textures/mars.jpg",
-  Jupiter: "/textures/jupiter.jpg",
-  Saturn: "/textures/saturn.jpg",
-  Uranus: "/textures/uranus.jpg",
-  Neptune: "/textures/neptune.jpg",
-  Pluto: null, // not available
-  Sun: "/textures/sun.jpg",
-  Moon: "/textures/moon.jpg",
-  MilkyWay: "/textures/milkyway.jpg",
-  // No separate textures for moons except Earth's Moon
+  mercury: "/textures/mercury.jpg",
+  venus: "/textures/venus.jpg",
+  earth: "/textures/earth.jpg",
+  mars: "/textures/mars.jpg",
+  jupiter: "/textures/jupiter.jpg",
+  saturn: "/textures/saturn.jpg",
+  uranus: "/textures/uranus.jpg",
+  neptune: "/textures/neptune.jpg",
+  pluto: null, // not available
+  sun: "/textures/sun.jpg",
+  moon: "/textures/moon.jpg",
+  milkyway: "/textures/milkyway.jpg",
 };
 
 // Planets and major moons
 const planetsData = [
   {
     name: "Mercury",
-    texture: PLANET_TEXTURES.Mercury,
+    texture: PLANET_TEXTURES.mercury,
     color: "#b5b5b5",
     size: 0.38,
     orbit: 6,
@@ -34,7 +32,7 @@ const planetsData = [
   },
   {
     name: "Venus",
-    texture: PLANET_TEXTURES.Venus,
+    texture: PLANET_TEXTURES.venus,
     color: "#eec97d",
     size: 0.95,
     orbit: 8,
@@ -43,7 +41,7 @@ const planetsData = [
   },
   {
     name: "Earth",
-    texture: PLANET_TEXTURES.Earth,
+    texture: PLANET_TEXTURES.earth,
     color: "#4a90e2",
     size: 1,
     orbit: 10,
@@ -51,7 +49,7 @@ const planetsData = [
     moons: [
       {
         name: "Moon",
-        texture: PLANET_TEXTURES.Moon,
+        texture: PLANET_TEXTURES.moon,
         color: "#cccccc",
         size: 0.27,
         orbit: 1.4,
@@ -61,7 +59,7 @@ const planetsData = [
   },
   {
     name: "Mars",
-    texture: PLANET_TEXTURES.Mars,
+    texture: PLANET_TEXTURES.mars,
     color: "#e1642b",
     size: 0.53,
     orbit: 12,
@@ -87,7 +85,7 @@ const planetsData = [
   },
   {
     name: "Jupiter",
-    texture: PLANET_TEXTURES.Jupiter,
+    texture: PLANET_TEXTURES.jupiter,
     color: "#fff3c2",
     size: 11.2,
     orbit: 15,
@@ -105,7 +103,7 @@ const planetsData = [
   },
   {
     name: "Saturn",
-    texture: PLANET_TEXTURES.Saturn,
+    texture: PLANET_TEXTURES.saturn,
     color: "#e7d19a",
     size: 9.45,
     orbit: 19,
@@ -123,7 +121,7 @@ const planetsData = [
   },
   {
     name: "Uranus",
-    texture: PLANET_TEXTURES.Uranus,
+    texture: PLANET_TEXTURES.uranus,
     color: "#7fffff",
     size: 4,
     orbit: 22,
@@ -141,7 +139,7 @@ const planetsData = [
   },
   {
     name: "Neptune",
-    texture: PLANET_TEXTURES.Neptune,
+    texture: PLANET_TEXTURES.neptune,
     color: "#417fff",
     size: 3.88,
     orbit: 25,
@@ -179,7 +177,7 @@ const planetsData = [
 
 // Milky Way background
 function MilkyWay() {
-  const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.MilkyWay);
+  const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.milkyway);
   return (
     <mesh scale={[-1, 1, 1]}>
       <sphereGeometry args={[120, 64, 64]} />
@@ -190,7 +188,7 @@ function MilkyWay() {
 
 // Sun
 function Sun({ size }) {
-  const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.Sun);
+  const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.sun);
   return (
     <mesh>
       <sphereGeometry args={[size, 64, 64]} />
@@ -223,7 +221,7 @@ function Planet({ data, guiData }) {
           <meshStandardMaterial color={guiData.color} />
         )}
       </mesh>
-      {/* Render moons for this planet */}
+      {/* Moons */}
       {data.moons &&
         data.moons.map((moon, i) => (
           <Moon
@@ -290,11 +288,9 @@ export default function SolarSystem() {
     let isMounted = true;
     let guiInstance = null;
 
-    // Dynamically import dat.gui to reduce bundle size
     import("dat.gui").then((dat) => {
       if (!isMounted) return;
 
-      // Clean up previous GUI if it exists
       if (guiRef.current) {
         guiRef.current.destroy();
         guiRef.current = null;
@@ -409,17 +405,11 @@ export default function SolarSystem() {
       <Canvas camera={{ position: [0, 18, 65], fov: 55 }}>
         <MilkyWay />
         <ambientLight intensity={0.6} />
-        {/* Planets and moons */}
-        {planetParams.map((params, i) => {
-          const staticData = planetsData.find(p => p.name === (planetsData[i]?.name || ""));
-          return (
-            <Planet
-              key={staticData?.name || i}
-              data={staticData}
-              guiData={params}
-            />
-          );
-        })}
+        <pointLight position={[0, 0, 0]} intensity={2.6} color="#fffde0" />
+        <Sun size={3.2} />
+        {planetsData.map((p, i) => (
+          <Planet key={p.name} data={p} guiData={planetParams[i]} />
+        ))}
         <OrbitControls />
       </Canvas>
     </div>
