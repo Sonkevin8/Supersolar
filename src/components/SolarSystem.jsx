@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Html, Line } from "@react-three/drei";
 import * as THREE from "three";
@@ -20,20 +20,25 @@ const PLANET_TEXTURES = {
   stars: "/textures/stars.jpg"
 };
 
-// Orbit colors for each planet
 const orbitColors = [
-  "#00ffe7", // Mercury
-  "#ffb347", // Venus
-  "#4a90e2", // Earth
-  "#e1642b", // Mars
-  "#fff3c2", // Jupiter
-  "#e7d19a", // Saturn
-  "#7fffff", // Uranus
-  "#417fff", // Neptune
-  "#cccccc"  // Pluto
+  "#00ffe7", "#ffb347", "#4a90e2", "#e1642b", "#fff3c2",
+  "#e7d19a", "#7fffff", "#417fff", "#cccccc"
 ];
 
-// Planets and major moons (spaced out, slower orbits)
+const planetFacts = {
+  Mercury: "Mercury is the closest planet to the Sun.",
+  Venus: "Venus is the hottest planet in our solar system.",
+  Earth: "Earth is the only planet known to support life.",
+  Mars: "Mars is known as the Red Planet.",
+  Jupiter: "Jupiter is the largest planet in our solar system.",
+  Saturn: "Saturn has the most spectacular ring system.",
+  Uranus: "Uranus rotates on its side.",
+  Neptune: "Neptune is the farthest planet from the Sun.",
+  Pluto: "Pluto is a dwarf planet in the Kuiper belt.",
+  Sun: "The Sun is a G-type main-sequence star at the center of our solar system.",
+  Moon: "Earth's only natural satellite."
+};
+
 const planetsData = [
   {
     name: "Mercury",
@@ -191,12 +196,14 @@ const planetsData = [
 
 // Glowing orbit ring for a planet or moon
 function OrbitRing({ radius, color = "#00ffe7", segments = 128, width = 2 }) {
-  // Create points for a circle in the XZ plane
-  const points = [];
-  for (let i = 0; i <= segments; i++) {
-    const theta = (i / segments) * Math.PI * 2;
-    points.push([Math.cos(theta) * radius, 0, Math.sin(theta) * radius]);
-  }
+  const points = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i <= segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      arr.push([Math.cos(theta) * radius, 0, Math.sin(theta) * radius]);
+    }
+    return arr;
+  }, [radius, segments]);
   return (
     <Line
       points={points}
@@ -206,6 +213,150 @@ function OrbitRing({ radius, color = "#00ffe7", segments = 128, width = 2 }) {
       opacity={0.7}
       dashed={false}
     />
+  );
+}
+
+// Planetary ring (for Saturn, Uranus, Neptune)
+function PlanetRing({ innerRadius, outerRadius, color = "#fff", opacity = 0.5 }) {
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[innerRadius, outerRadius, 64]} />
+      <meshBasicMaterial color={color} transparent opacity={opacity} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
+// Atmosphere glow (for Earth and gas giants)
+function AtmosphereGlow({ size, color = "#00ffe7", intensity = 0.18 }) {
+  return (
+    <mesh>
+      <sphereGeometry args={[size * 1.08, 64, 64]} />
+      <meshBasicMaterial
+        color={color}
+        transparent
+        opacity={intensity}
+        side={THREE.BackSide}
+      />
+    </mesh>
+  );
+}
+
+// Day/Night shading (terminator effect for Earth)
+function Terminator({ size }) {
+  return (
+    <mesh>
+      <sphereGeometry args={[size * 1.01, 64, 64]} />
+      <meshStandardMaterial
+        color="#000"
+        transparent
+        opacity={0.45}
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
+}
+
+// Comet (animated)
+function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
+  const meshRef = useRef();
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    const angle = speed * t + 1.5;
+    meshRef.current.position.x = orbit * Math.cos(angle);
+    meshRef.current.position.z = orbit * Math.sin(angle);
+    meshRef.current.position.y = Math.sin(angle * 2) * 10;
+    meshRef.current.rotation.y += 0.02;
+  });
+  return (
+    <mesh ref={meshRef}>
+      <sphereGeometry args={[size, 16, 16]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} />
+      {/* Comet tail */}
+      <mesh position={[0, 0, -size * 2]}>
+        <coneGeometry args={[size * 0.3, size * 3, 8]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} />
+      </mesh>
+    </mesh>
+  );
+}
+
+// Asteroid belt (simple)
+function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
+  const asteroids = useMemo(() => {
+    return Array.from({ length: count }).map((_, i) => {
+      const angle = (i / count) * Math.PI * 2 + Math.random();
+      const radius = inner + Math.random() * (outer - inner);
+      const y = (Math.random() - 0.5) * 2;
+      return { angle, radius, y, size: 0.12 + Math.random() * 0.18 };
+    });
+  }, [count, inner, outer]);
+  return (
+    <>
+      {asteroids.map((a, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.cos(a.angle) * a.radius,
+            a.y,
+            Math.sin(a.angle) * a.radius
+          ]}
+        >
+          <sphereGeometry args={[a.size, 8, 8]} />
+          <meshStandardMaterial color="#888" roughness={0.8} metalness={0.2} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+// Info Popup
+function InfoPopup({ body, onClose }) {
+  if (!body) return null;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        right: 30,
+        top: 30,
+        background: "rgba(10,20,40,0.95)",
+        color: "#00ffe7",
+        fontFamily: "'Orbitron', sans-serif",
+        borderRadius: 12,
+        padding: "18px 24px",
+        zIndex: 100,
+        minWidth: 220,
+        boxShadow: "0 0 24px #00ffe7aa"
+      }}
+    >
+      <div style={{ fontSize: "1.3em", fontWeight: "bold", marginBottom: 8 }}>
+        {body.name}
+      </div>
+      <div style={{ fontSize: "1em", marginBottom: 8 }}>
+        {planetFacts[body.name] || "A fascinating celestial body."}
+      </div>
+      {body.orbit && (
+        <div>Orbit radius: <b>{body.orbit}</b></div>
+      )}
+      {body.size && (
+        <div>Diameter: <b>{(body.size * 12742).toFixed(0)} km</b></div>
+      )}
+      <button
+        style={{
+          marginTop: 12,
+          background: "#00ffe7",
+          color: "#111",
+          border: "none",
+          borderRadius: 6,
+          padding: "6px 18px",
+          fontFamily: "'Orbitron', sans-serif",
+          fontWeight: "bold",
+          cursor: "pointer"
+        }}
+        onClick={onClose}
+      >
+        Close
+      </button>
+    </div>
   );
 }
 
@@ -271,6 +422,8 @@ function Planet({ data, guiData, setFocus, orbitColor }) {
         ) : (
           <meshStandardMaterial color={guiData.color} />
         )}
+        {/* Day/night terminator for Earth */}
+        {data.name === "Earth" && <Terminator size={guiData.size} />}
       </mesh>
       {/* --- Planet Label --- */}
       <Html
@@ -303,6 +456,23 @@ function Planet({ data, guiData, setFocus, orbitColor }) {
             parentRef={meshRef}
           />
         ))}
+      {/* Rings for Saturn, Uranus, Neptune */}
+      {["Saturn", "Uranus", "Neptune"].includes(data.name) && (
+        <PlanetRing
+          innerRadius={guiData.size * (data.name === "Saturn" ? 1.2 : 1.1)}
+          outerRadius={guiData.size * (data.name === "Saturn" ? 2.2 : 1.5)}
+          color={data.name === "Saturn" ? "#ffe9a9" : "#aaffff"}
+          opacity={data.name === "Saturn" ? 0.45 : 0.25}
+        />
+      )}
+      {/* Atmosphere glow for Earth and gas giants */}
+      {["Earth", "Jupiter", "Saturn", "Uranus", "Neptune"].includes(data.name) && (
+        <AtmosphereGlow
+          size={guiData.size}
+          color={orbitColor}
+          intensity={data.name === "Earth" ? 0.18 : 0.12}
+        />
+      )}
     </group>
   );
 }
@@ -361,22 +531,7 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   );
 }
 
-
-function PlanetRing({ innerRadius, outerRadius, color = "#fff", opacity = 0.5 }) {
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[innerRadius, outerRadius, 64]} />
-      <meshBasicMaterial color={color} transparent opacity={opacity} side={THREE.DoubleSide} />
-    </mesh>
-  );
-}
-
-
-
-
-
 export default function SolarSystem() {
-  // --- State for GUI controlled planet and moon parameters ---
   const [planetParams, setPlanetParams] = useState(() =>
     planetsData.map((p, pi) => ({
       size: p.size,
@@ -392,12 +547,11 @@ export default function SolarSystem() {
       }))
     }))
   );
-
-  // --- Click-to-focus state ---
   const [focus, setFocus] = useState({ position: [0, 0, 0], name: "Sun" });
+  const [selectedBody, setSelectedBody] = useState(null);
   const controlsRef = useRef();
 
-  // --- DAT.GUI SETUP ---
+  // dat.GUI setup (same as your code)
   const guiRef = useRef(null);
   useEffect(() => {
     let isMounted = true;
@@ -515,7 +669,6 @@ export default function SolarSystem() {
     };
   }, [planetParams]);
 
-  // --- Focus OrbitControls on click ---
   useEffect(() => {
     if (controlsRef.current) {
       controlsRef.current.target.set(...focus.position);
@@ -525,14 +678,18 @@ export default function SolarSystem() {
 
   return (
     <div style={{ width: "100vw", height: "92vh", position: "relative" }}>
+      <InfoPopup body={selectedBody} onClose={() => setSelectedBody(null)} />
       <Canvas camera={{ position: [0, 40, 220], fov: 55 }}>
         <MilkyWay />
         <ambientLight intensity={0.6} />
         <pointLight position={[0, 0, 0]} intensity={2.6} color="#fffde0" />
         <Sun size={3.2} setFocus={setFocus} />
+        {/* Asteroid belt */}
+        <AsteroidBelt count={80} inner={45} outer={55} />
+        {/* Comet */}
+        <Comet orbit={120} speed={0.04} size={0.7} color="#fff" />
         {planetsData.map((p, i) => (
           <group key={p.name}>
-            {/* Glowing orbit for planet */}
             <OrbitRing
               radius={planetParams[i].orbit}
               color={orbitColors[i]}
@@ -541,10 +698,12 @@ export default function SolarSystem() {
             <Planet
               data={p}
               guiData={planetParams[i]}
-              setFocus={setFocus}
+              setFocus={pos => {
+                setFocus(pos);
+                setSelectedBody({ ...p, ...planetParams[i] });
+              }}
               orbitColor={orbitColors[i]}
             />
-            {/* Glowing orbits for moons */}
             {p.moons && p.moons.map((moon, mi) => (
               <OrbitRing
                 key={moon.name}
