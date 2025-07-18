@@ -195,7 +195,16 @@ const planetsData = [
 ];
 
 // Glowing orbit ring for a planet or moon
-function OrbitRing({ radius, color = "#00ffe7", segments = 128, width = 2 }) {
+function OrbitRing({
+  radius,
+  color = "#00ffe7",
+  segments = 128,
+  width = 2,
+  opacity = 0.2,         // More transparent
+  dashed = true,
+  dashSize = 1,
+  gapSize = 1
+}) {
   const points = useMemo(() => {
     const arr = [];
     for (let i = 0; i <= segments; i++) {
@@ -210,8 +219,10 @@ function OrbitRing({ radius, color = "#00ffe7", segments = 128, width = 2 }) {
       color={color}
       lineWidth={width}
       transparent
-      opacity={0.7}
-      dashed={false}
+      opacity={opacity}
+      dashed={dashed}
+      dashSize={dashSize}
+      gapSize={gapSize}
     />
   );
 }
