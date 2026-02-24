@@ -806,40 +806,42 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
 
   return (
     <group position={position}>
+      {/* Add a directional light for cartoon Earth */}
+      <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
       {/* Main blue sphere */}
       <mesh>
         <sphereGeometry args={[size, 32, 32]} />
         <meshStandardMaterial color="#3ab6ff" />
       </mesh>
-      {/* Continents always visible */}
-      <mesh position={[size * 0.5, 0, size * 0.7]}>
-        <sphereGeometry args={[size * 0.25, 16, 16]} />
+      {/* Continents always visible, offset outward */}
+      <mesh position={[size * 0.5, size * 0.05, size * 0.7]}>
+        <sphereGeometry args={[size * 0.26, 16, 16]} />
         <meshStandardMaterial color="#6fd47f" />
       </mesh>
-      <mesh position={[-size * 0.4, 0, -size * 0.6]}>
-        <sphereGeometry args={[size * 0.18, 16, 16]} />
+      <mesh position={[-size * 0.4, size * 0.05, -size * 0.6]}>
+        <sphereGeometry args={[size * 0.19, 16, 16]} />
         <meshStandardMaterial color="#6fd47f" />
       </mesh>
-      {/* Animated clouds */}
-      <mesh ref={cloudRef1} position={[0, size * 0.7, 0]}>
-        <sphereGeometry args={[size * 0.12, 12, 12]} />
+      {/* Animated clouds, offset outward */}
+      <mesh ref={cloudRef1} position={[0, size * 0.8, 0]}>
+        <sphereGeometry args={[size * 0.13, 12, 12]} />
         <meshStandardMaterial color="#fff" transparent opacity={0.7} />
       </mesh>
-      <mesh ref={cloudRef2} position={[size * 0.3, size * 0.6, -size * 0.2]}>
-        <sphereGeometry args={[size * 0.09, 10, 10]} />
+      <mesh ref={cloudRef2} position={[size * 0.35, size * 0.7, -size * 0.2]}>
+        <sphereGeometry args={[size * 0.1, 10, 10]} />
         <meshStandardMaterial color="#fff" transparent opacity={0.6} />
       </mesh>
 
-      {/* Cities (zoom >= 2) */}
+      {/* Cities (zoom >= 2), offset outward */}
       {zoom >= 2 && cities.map((pos, i) => (
-        <mesh key={i} position={pos}>
-          <boxGeometry args={[0.18, 0.18, 0.18]} />
+        <mesh key={i} position={[pos[0], pos[1] + 0.12, pos[2]]}>
+          <boxGeometry args={[0.22, 0.22, 0.22]} />
           <meshStandardMaterial color="#b0b0b0" />
         </mesh>
       ))}
-      {/* Animated people (zoom >= 3) */}
+      {/* Animated people (zoom >= 3), offset outward */}
       {zoom >= 3 && people.map((pos, i) => (
-        <AnimatedPerson key={i} pos={pos} color={i % 2 === 0 ? '#ffb347' : '#e1642b'} />
+        <AnimatedPerson key={i} pos={[pos[0], pos[1] + 0.18, pos[2]]} color={i % 2 === 0 ? '#ffb347' : '#e1642b'} />
       ))}
 
       {/* Zoom controls and close button */}
