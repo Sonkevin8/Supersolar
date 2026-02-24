@@ -194,22 +194,17 @@ const planetsData = [
   }
 ];
 
-<<<<<<< HEAD
-// Glowing orbit ring for a planet or moon
-<<<<<<< HEAD
-function OrbitRing({ radius, color = "#00ffe7", segments = 128, width = 2 }) {
-=======
+// OrbitRing
 function OrbitRing({
   radius,
   color = "#00ffe7",
   segments = 128,
   width = 2,
-  opacity = 0.2,         // More transparent
+  opacity = 0.2,
   dashed = true,
   dashSize = 1,
   gapSize = 1
 }) {
->>>>>>> parent of 0df3554 (cartoon componen added)
   const points = useMemo(() => {
     const arr = [];
     for (let i = 0; i <= segments; i++) {
@@ -224,20 +219,15 @@ function OrbitRing({
       color={color}
       lineWidth={width}
       transparent
-<<<<<<< HEAD
-      opacity={0.7}
-      dashed={false}
-=======
       opacity={opacity}
       dashed={dashed}
       dashSize={dashSize}
       gapSize={gapSize}
->>>>>>> parent of 0df3554 (cartoon componen added)
     />
   );
 }
 
-// Planetary ring (for Saturn, Uranus, Neptune)
+// PlanetRing
 function PlanetRing({ innerRadius, outerRadius, color = "#fff", opacity = 0.5 }) {
   return (
     <mesh rotation={[-Math.PI / 2, 0, 0]}>
@@ -247,7 +237,7 @@ function PlanetRing({ innerRadius, outerRadius, color = "#fff", opacity = 0.5 })
   );
 }
 
-// Atmosphere glow (for Earth and gas giants)
+// AtmosphereGlow
 function AtmosphereGlow({ size, color = "#00ffe7", intensity = 0.18 }) {
   return (
     <mesh>
@@ -262,7 +252,7 @@ function AtmosphereGlow({ size, color = "#00ffe7", intensity = 0.18 }) {
   );
 }
 
-// Day/Night shading (terminator effect for Earth)
+// Terminator
 function Terminator({ size }) {
   return (
     <mesh>
@@ -277,63 +267,7 @@ function Terminator({ size }) {
   );
 }
 
-// Comet (animated)
-function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
-  const meshRef = useRef();
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    const angle = speed * t + 1.5;
-    meshRef.current.position.x = orbit * Math.cos(angle);
-    meshRef.current.position.z = orbit * Math.sin(angle);
-    meshRef.current.position.y = Math.sin(angle * 2) * 10;
-    meshRef.current.rotation.y += 0.02;
-  });
-  return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[size, 16, 16]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} />
-      {/* Comet tail */}
-      <mesh position={[0, 0, -size * 2]}>
-        <coneGeometry args={[size * 0.3, size * 3, 8]} />
-        <meshBasicMaterial color={color} transparent opacity={0.5} />
-      </mesh>
-    </mesh>
-  );
-}
-
-// Asteroid belt (simple)
-function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
-  const asteroids = useMemo(() => {
-    return Array.from({ length: count }).map((_, i) => {
-      const angle = (i / count) * Math.PI * 2 + Math.random();
-      const radius = inner + Math.random() * (outer - inner);
-      const y = (Math.random() - 0.5) * 2;
-      return { angle, radius, y, size: 0.12 + Math.random() * 0.18 };
-    });
-  }, [count, inner, outer]);
-  return (
-    <>
-      {asteroids.map((a, i) => (
-        <mesh
-          key={i}
-          position={[
-            Math.cos(a.angle) * a.radius,
-            a.y,
-            Math.sin(a.angle) * a.radius
-          ]}
-        >
-          <sphereGeometry args={[a.size, 8, 8]} />
-          <meshStandardMaterial color="#888" roughness={0.8} metalness={0.2} />
-        </mesh>
-      ))}
-    </>
-  );
-}
-
-// Info Popup
-=======
 // InfoPopup
->>>>>>> parent of 753b37d (Revert "cartoon componen added")
 function InfoPopup({ body, onClose }) {
   if (!body) return null;
   return (
@@ -407,132 +341,6 @@ function Sun({ size, setFocus }) {
     >
       <sphereGeometry args={[size, 64, 64]} />
       <meshStandardMaterial map={texture} emissive={"#fff26b"} />
-    </mesh>
-  );
-}
-
-// Comet
-function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
-  const meshRef = useRef();
-  useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
-    const angle = speed * t + 1.5;
-    meshRef.current.position.x = orbit * Math.cos(angle);
-    meshRef.current.position.z = orbit * Math.sin(angle);
-    meshRef.current.position.y = Math.sin(angle * 2) * 10;
-    meshRef.current.rotation.y += 0.02;
-  });
-  return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[size, 16, 16]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} />
-      {/* Comet tail */}
-      <mesh position={[0, 0, -size * 2]}>
-        <coneGeometry args={[size * 0.3, size * 3, 8]} />
-        <meshBasicMaterial color={color} transparent opacity={0.5} />
-      </mesh>
-    </mesh>
-  );
-}
-
-// AsteroidBelt
-function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
-  const asteroids = useMemo(() => {
-    return Array.from({ length: count }).map((_, i) => {
-      const angle = (i / count) * Math.PI * 2 + Math.random();
-      const radius = inner + Math.random() * (outer - inner);
-      const y = (Math.random() - 0.5) * 2;
-      return { angle, radius, y, size: 0.12 + Math.random() * 0.18 };
-    });
-  }, [count, inner, outer]);
-  return (
-    <>
-      {asteroids.map((a, i) => (
-        <mesh
-          key={i}
-          position={[
-            Math.cos(a.angle) * a.radius,
-            a.y,
-            Math.sin(a.angle) * a.radius
-          ]}
-        >
-          <sphereGeometry args={[a.size, 8, 8]} />
-          <meshStandardMaterial color="#888" roughness={0.8} metalness={0.2} />
-        </mesh>
-      ))}
-    </>
-  );
-}
-
-// OrbitRing
-function OrbitRing({
-  radius,
-  color = "#00ffe7",
-  segments = 128,
-  width = 2,
-  opacity = 0.2,
-  dashed = true,
-  dashSize = 1,
-  gapSize = 1
-}) {
-  const points = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i <= segments; i++) {
-      const theta = (i / segments) * Math.PI * 2;
-      arr.push([Math.cos(theta) * radius, 0, Math.sin(theta) * radius]);
-    }
-    return arr;
-  }, [radius, segments]);
-  return (
-    <Line
-      points={points}
-      color={color}
-      lineWidth={width}
-      transparent
-      opacity={opacity}
-      dashed={dashed}
-      dashSize={dashSize}
-      gapSize={gapSize}
-    />
-  );
-}
-
-// PlanetRing
-function PlanetRing({ innerRadius, outerRadius, color = "#fff", opacity = 0.5 }) {
-  return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]}>
-      <ringGeometry args={[innerRadius, outerRadius, 64]} />
-      <meshBasicMaterial color={color} transparent opacity={opacity} side={THREE.DoubleSide} />
-    </mesh>
-  );
-}
-
-// AtmosphereGlow
-function AtmosphereGlow({ size, color = "#00ffe7", intensity = 0.18 }) {
-  return (
-    <mesh>
-      <sphereGeometry args={[size * 1.08, 64, 64]} />
-      <meshBasicMaterial
-        color={color}
-        transparent
-        opacity={intensity}
-        side={THREE.BackSide}
-      />
-    </mesh>
-  );
-}
-
-// Terminator
-function Terminator({ size }) {
-  return (
-    <mesh>
-      <sphereGeometry args={[size * 1.01, 64, 64]} />
-      <meshStandardMaterial
-        color="#000"
-        transparent
-        opacity={0.45}
-        side={THREE.FrontSide}
-      />
     </mesh>
   );
 }
