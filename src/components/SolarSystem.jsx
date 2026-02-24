@@ -1,3 +1,26 @@
+// Comet (restored)
+function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
+  const meshRef = useRef();
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    const angle = speed * t + 1.5;
+    meshRef.current.position.x = orbit * Math.cos(angle);
+    meshRef.current.position.z = orbit * Math.sin(angle);
+    meshRef.current.position.y = Math.sin(angle * 2) * 10;
+    meshRef.current.rotation.y += 0.02;
+  });
+  return (
+    <mesh ref={meshRef}>
+      <sphereGeometry args={[size, 16, 16]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} />
+      {/* Comet tail */}
+      <mesh position={[0, 0, -size * 2]}>
+        <coneGeometry args={[size * 0.3, size * 3, 8]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} />
+      </mesh>
+    </mesh>
+  );
+}
 // AsteroidBelt (restored)
 function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
   const asteroids = useMemo(() => {
