@@ -46,7 +46,7 @@ const planetsData = [
     color: "#b5b5b5",
     size: 0.38,
     orbit: 10,
-    speed: 0.24,
+    speed: 0.24 * 0.01,
     moons: []
   },
   {
@@ -55,7 +55,7 @@ const planetsData = [
     color: "#eec97d",
     size: 0.95,
     orbit: 15,
-    speed: 0.18,
+    speed: 0.18 * 0.01,
     moons: []
   },
   {
@@ -64,7 +64,7 @@ const planetsData = [
     color: "#4a90e2",
     size: 1,
     orbit: 20,
-    speed: 0.15,
+    speed: 0.15 * 0.01,
     moons: [
       {
         name: "Moon",
@@ -72,7 +72,7 @@ const planetsData = [
         color: "#cccccc",
         size: 0.27,
         orbit: 2,
-        speed: 1.5
+        speed: 1.5 * 0.01
       }
     ]
   },
@@ -82,7 +82,7 @@ const planetsData = [
     color: "#e1642b",
     size: 0.53,
     orbit: 27,
-    speed: 0.13,
+    speed: 0.13 * 0.01,
     moons: [
       {
         name: "Phobos",
@@ -90,7 +90,7 @@ const planetsData = [
         color: "#bbbbbb",
         size: 0.11,
         orbit: 1.2,
-        speed: 2.5
+        speed: 2.5 * 0.01
       },
       {
         name: "Deimos",
@@ -98,7 +98,7 @@ const planetsData = [
         color: "#bbbbbb",
         size: 0.06,
         orbit: 1.7,
-        speed: 1.2
+        speed: 1.2 * 0.01
       }
     ]
   },
@@ -108,7 +108,7 @@ const planetsData = [
     color: "#fff3c2",
     size: 11.2,
     orbit: 40,
-    speed: 0.08,
+    speed: 0.08 * 0.01,
     moons: [
       {
         name: "Io",
@@ -116,7 +116,7 @@ const planetsData = [
         color: "#e6e27a",
         size: 0.29,
         orbit: 2.5,
-        speed: 2.2
+        speed: 2.2 * 0.01
       }
     ]
   },
@@ -126,7 +126,7 @@ const planetsData = [
     color: "#e7d19a",
     size: 9.45,
     orbit: 55,
-    speed: 0.06,
+    speed: 0.06 * 0.01,
     moons: [
       {
         name: "Titan",
@@ -134,7 +134,7 @@ const planetsData = [
         color: "#e6be8a",
         size: 0.4,
         orbit: 3,
-        speed: 1.7
+        speed: 1.7 * 0.01
       }
     ]
   },
@@ -144,7 +144,7 @@ const planetsData = [
     color: "#7fffff",
     size: 4,
     orbit: 70,
-    speed: 0.04,
+    speed: 0.04 * 0.01,
     moons: [
       {
         name: "Miranda",
@@ -152,7 +152,7 @@ const planetsData = [
         color: "#d8e6ff",
         size: 0.12,
         orbit: 2.2,
-        speed: 1.2
+        speed: 1.2 * 0.01
       }
     ]
   },
@@ -162,7 +162,7 @@ const planetsData = [
     color: "#417fff",
     size: 3.88,
     orbit: 85,
-    speed: 0.03,
+    speed: 0.03 * 0.01,
     moons: [
       {
         name: "Triton",
@@ -170,7 +170,7 @@ const planetsData = [
         color: "#b3cfff",
         size: 0.21,
         orbit: 2.5,
-        speed: 1.1
+        speed: 1.1 * 0.01
       }
     ]
   },
@@ -180,7 +180,7 @@ const planetsData = [
     color: "#cccccc",
     size: 0.18,
     orbit: 100,
-    speed: 0.02,
+    speed: 0.02 * 0.01,
     moons: [
       {
         name: "Charon",
@@ -188,12 +188,13 @@ const planetsData = [
         color: "#bbbbbb",
         size: 0.09,
         orbit: 1.5,
-        speed: 0.8
+        speed: 0.8 * 0.01
       }
     ]
   }
 ];
 
+<<<<<<< HEAD
 // Glowing orbit ring for a planet or moon
 <<<<<<< HEAD
 function OrbitRing({ radius, color = "#00ffe7", segments = 128, width = 2 }) {
@@ -330,6 +331,9 @@ function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
 }
 
 // Info Popup
+=======
+// InfoPopup
+>>>>>>> parent of 753b37d (Revert "cartoon componen added")
 function InfoPopup({ body, onClose }) {
   if (!body) return null;
   return (
@@ -380,7 +384,7 @@ function InfoPopup({ body, onClose }) {
   );
 }
 
-// Milky Way background
+// MilkyWay
 function MilkyWay() {
   const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.milkyway);
   return (
@@ -407,6 +411,133 @@ function Sun({ size, setFocus }) {
   );
 }
 
+// Comet
+function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
+  const meshRef = useRef();
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    const angle = speed * t + 1.5;
+    meshRef.current.position.x = orbit * Math.cos(angle);
+    meshRef.current.position.z = orbit * Math.sin(angle);
+    meshRef.current.position.y = Math.sin(angle * 2) * 10;
+    meshRef.current.rotation.y += 0.02;
+  });
+  return (
+    <mesh ref={meshRef}>
+      <sphereGeometry args={[size, 16, 16]} />
+      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} />
+      {/* Comet tail */}
+      <mesh position={[0, 0, -size * 2]}>
+        <coneGeometry args={[size * 0.3, size * 3, 8]} />
+        <meshBasicMaterial color={color} transparent opacity={0.5} />
+      </mesh>
+    </mesh>
+  );
+}
+
+// AsteroidBelt
+function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
+  const asteroids = useMemo(() => {
+    return Array.from({ length: count }).map((_, i) => {
+      const angle = (i / count) * Math.PI * 2 + Math.random();
+      const radius = inner + Math.random() * (outer - inner);
+      const y = (Math.random() - 0.5) * 2;
+      return { angle, radius, y, size: 0.12 + Math.random() * 0.18 };
+    });
+  }, [count, inner, outer]);
+  return (
+    <>
+      {asteroids.map((a, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.cos(a.angle) * a.radius,
+            a.y,
+            Math.sin(a.angle) * a.radius
+          ]}
+        >
+          <sphereGeometry args={[a.size, 8, 8]} />
+          <meshStandardMaterial color="#888" roughness={0.8} metalness={0.2} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+// OrbitRing
+function OrbitRing({
+  radius,
+  color = "#00ffe7",
+  segments = 128,
+  width = 2,
+  opacity = 0.2,
+  dashed = true,
+  dashSize = 1,
+  gapSize = 1
+}) {
+  const points = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i <= segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      arr.push([Math.cos(theta) * radius, 0, Math.sin(theta) * radius]);
+    }
+    return arr;
+  }, [radius, segments]);
+  return (
+    <Line
+      points={points}
+      color={color}
+      lineWidth={width}
+      transparent
+      opacity={opacity}
+      dashed={dashed}
+      dashSize={dashSize}
+      gapSize={gapSize}
+    />
+  );
+}
+
+// PlanetRing
+function PlanetRing({ innerRadius, outerRadius, color = "#fff", opacity = 0.5 }) {
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]}>
+      <ringGeometry args={[innerRadius, outerRadius, 64]} />
+      <meshBasicMaterial color={color} transparent opacity={opacity} side={THREE.DoubleSide} />
+    </mesh>
+  );
+}
+
+// AtmosphereGlow
+function AtmosphereGlow({ size, color = "#00ffe7", intensity = 0.18 }) {
+  return (
+    <mesh>
+      <sphereGeometry args={[size * 1.08, 64, 64]} />
+      <meshBasicMaterial
+        color={color}
+        transparent
+        opacity={intensity}
+        side={THREE.BackSide}
+      />
+    </mesh>
+  );
+}
+
+// Terminator
+function Terminator({ size }) {
+  return (
+    <mesh>
+      <sphereGeometry args={[size * 1.01, 64, 64]} />
+      <meshStandardMaterial
+        color="#000"
+        transparent
+        opacity={0.45}
+        side={THREE.FrontSide}
+      />
+    </mesh>
+  );
+}
+
+// Planet
 function Planet({ data, guiData, setFocus, orbitColor }) {
   const texture = data.texture
     ? useLoader(THREE.TextureLoader, data.texture)
@@ -497,6 +628,7 @@ function Planet({ data, guiData, setFocus, orbitColor }) {
   );
 }
 
+// Moon
 function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef }) {
   const texture =
     data.texture ? useLoader(THREE.TextureLoader, data.texture) : null;
@@ -551,6 +683,264 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   );
 }
 
+// RocketForm
+function RocketForm({ planets, onSubmit }) {
+  const [from, setFrom] = useState(planets[2].name); // Default: Earth
+  const [to, setTo] = useState(planets[3].name); // Default: Mars
+
+  return (
+    <form
+      style={{
+        background: "#111a",
+        color: "#fff",
+        padding: 16,
+        borderRadius: 12,
+        fontFamily: "Orbitron, sans-serif",
+        position: "absolute",
+        left: 20,
+        top: 20,
+        zIndex: 10,
+        minWidth: 260
+      }}
+      onSubmit={e => {
+        e.preventDefault();
+        if (from === to) return;
+        onSubmit({
+          from: planets.find(p => p.name === from),
+          to: planets.find(p => p.name === to)
+        });
+      }}
+    >
+      <div>
+        <label>Takeoff Planet: </label>
+        <select value={from} onChange={e => setFrom(e.target.value)}>
+          {planets.map(p => (
+            <option key={p.name} value={p.name}>{p.name}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label>Destination Planet: </label>
+        <select value={to} onChange={e => setTo(e.target.value)}>
+          {planets.map(p => (
+            <option key={p.name} value={p.name}>{p.name}</option>
+          ))}
+        </select>
+      </div>
+      <button type="submit" style={{marginTop: 10}}>Calculate</button>
+    </form>
+  );
+}
+
+// Helper: get planet position in 3D scene
+function getPlanetPosition(planetParams, planetIndex, t) {
+  const { orbit, speed, offset } = planetParams[planetIndex];
+  return new THREE.Vector3(
+    Math.cos(speed * t + offset) * orbit,
+    0,
+    Math.sin(speed * t + offset) * orbit
+  );
+}
+
+function RocketTransfer({ from, to, planetParams }) {
+  const fromIdx = planetsData.findIndex(p => p.name === from.name);
+  const toIdx = planetsData.findIndex(p => p.name === to.name);
+
+  const rocketRef = useRef();
+  const [launched, setLaunched] = useState(false);
+  const [launchTime, setLaunchTime] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+    const fromPos = getPlanetPosition(planetParams, fromIdx, t);
+    const toPos = getPlanetPosition(planetParams, toIdx, t);
+
+    // Rocket size factor
+    const rocketScale = 1 / 3;
+
+    if (!launched) {
+      // Place rocket on surface of from planet, upright
+      const planetRadius = planetParams[fromIdx].size;
+      const up = fromPos.clone().normalize();
+      rocketRef.current.position.copy(fromPos.clone().add(up.clone().multiplyScalar(planetRadius + 1)));
+      // Make rocket "up" match planet normal
+      const lookAtTarget = rocketRef.current.position.clone().add(up);
+      rocketRef.current.up.set(0, 1, 0); // reset up
+      rocketRef.current.lookAt(lookAtTarget);
+      rocketRef.current.scale.set(rocketScale, rocketScale, rocketScale);
+      setProgress(0);
+    } else {
+      // Animate rocket along arc from fromPos to toPos
+      const elapsed = t - launchTime;
+      const totalTime = 10; // seconds for full trip
+      let arcT = Math.min(elapsed / totalTime, 1);
+      setProgress(arcT);
+
+      // Arc: interpolate and add height
+      const pos = new THREE.Vector3().lerpVectors(fromPos, toPos, arcT);
+      pos.y += Math.sin(Math.PI * arcT) * 10;
+      rocketRef.current.position.copy(pos);
+
+      // Orient rocket along path
+      const nextPos = new THREE.Vector3().lerpVectors(fromPos, toPos, Math.min(arcT + 0.01, 1));
+      nextPos.y += Math.sin(Math.PI * Math.min(arcT + 0.01, 1)) * 10;
+      rocketRef.current.lookAt(nextPos);
+      rocketRef.current.scale.set(rocketScale, rocketScale, rocketScale);
+
+      // Stop at destination
+      if (arcT >= 1) setLaunched(false);
+    }
+  });
+
+  // Path points for the dashed line (from planet to current rocket position)
+  const pathPoints = useMemo(() => {
+    if (!rocketRef.current) return [];
+    const t = performance.now() / 1000;
+    const fromPos = getPlanetPosition(planetParams, fromIdx, t);
+    const toPos = getPlanetPosition(planetParams, toIdx, t);
+    const arr = [];
+    const steps = 32;
+    for (let i = 0; i <= steps * progress; i++) {
+      const arcT = i / steps;
+      const pos = new THREE.Vector3().lerpVectors(fromPos, toPos, arcT);
+      pos.y += Math.sin(Math.PI * arcT) * 10;
+      arr.push([pos.x, pos.y, pos.z]);
+    }
+    return arr;
+  }, [fromIdx, toIdx, planetParams, progress]);
+
+  return (
+    <>
+      <group
+        ref={rocketRef}
+        onClick={() => {
+          if (!launched) {
+            setLaunched(true);
+            setLaunchTime(performance.now() / 1000);
+          }
+        }}
+        style={{ cursor: "pointer" }}
+      >
+        {/* Main white body */}
+        <mesh>
+          <cylinderGeometry args={[0.18, 0.18, 1.2, 24]} />
+          <meshStandardMaterial color="#fff" />
+        </mesh>
+        {/* Black band near top */}
+        <mesh position={[0, 0.45, 0]}>
+          <cylinderGeometry args={[0.19, 0.19, 0.08, 24]} />
+          <meshStandardMaterial color="#222" />
+        </mesh>
+        {/* Orange lower tank (SLS style) */}
+        <mesh position={[0, -0.5, 0]}>
+          <cylinderGeometry args={[0.22, 0.22, 0.4, 24]} />
+          <meshStandardMaterial color="#ff8800" />
+        </mesh>
+        {/* Engine section */}
+        <mesh position={[0, -0.8, 0]}>
+          <cylinderGeometry args={[0.15, 0.22, 0.18, 24]} />
+          <meshStandardMaterial color="#444" />
+        </mesh>
+        {/* Nose cone */}
+        <mesh position={[0, 0.7, 0]}>
+          <coneGeometry args={[0.18, 0.32, 24]} />
+          <meshStandardMaterial color="#fff" />
+        </mesh>
+        {/* Fins (4) */}
+        {[...Array(4)].map((_, i) => (
+          <mesh
+            key={i}
+            position={[
+              Math.cos((i * Math.PI) / 2) * 0.18,
+              -0.95,
+              Math.sin((i * Math.PI) / 2) * 0.18
+            ]}
+            rotation={[0, (i * Math.PI) / 2, 0]}
+          >
+            <boxGeometry args={[0.04, 0.18, 0.12]} />
+            <meshStandardMaterial color="#888" />
+          </mesh>
+        ))}
+        {/* Animated flame (only when launched) */}
+        {launched && (
+          <mesh position={[0, -1.1, 0]}>
+            <coneGeometry args={[0.12 + Math.random() * 0.04, 0.35 + Math.random() * 0.1, 12]} />
+            <meshStandardMaterial color="#ffb300" emissive="#ffb300" transparent opacity={0.7} />
+          </mesh>
+        )}
+      </group>
+      {/* Dashed path */}
+      {pathPoints.length > 1 && (
+        <Line
+          points={pathPoints}
+          color="#00ffe7"
+          lineWidth={2}
+          transparent
+          opacity={0.7}
+          dashed
+          dashSize={1.5}
+          gapSize={1.5}
+        />
+      )}
+      {/* Click hint */}
+      {!launched && (
+        <Html position={[0, 1.2, 0]} center style={{
+          color: "#fff", fontFamily: "Orbitron, sans-serif", fontWeight: "bold",
+          background: "rgba(0,0,0,0.7)", padding: "4px 10px", borderRadius: 6
+        }}>
+          Click rocket to launch!
+        </Html>
+      )}
+    </>
+  );
+}
+
+// Cartoon Earth component
+function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
+  return (
+    <group position={position}>
+      {/* Main blue sphere */}
+      <mesh>
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshStandardMaterial color="#3ab6ff" />
+      </mesh>
+      {/* Cartoon continents */}
+      <mesh position={[size * 0.5, 0, size * 0.7]}>
+        <sphereGeometry args={[size * 0.25, 16, 16]} />
+        <meshStandardMaterial color="#6fd47f" />
+      </mesh>
+      <mesh position={[-size * 0.4, 0, -size * 0.6]}>
+        <sphereGeometry args={[size * 0.18, 16, 16]} />
+        <meshStandardMaterial color="#6fd47f" />
+      </mesh>
+      {/* Cartoon clouds */}
+      <mesh position={[0, size * 0.7, 0]}>
+        <sphereGeometry args={[size * 0.12, 12, 12]} />
+        <meshStandardMaterial color="#fff" transparent opacity={0.7} />
+      </mesh>
+      {/* Close button */}
+      <Html position={[0, size * 1.5, 0]} center>
+        <button
+          style={{
+            background: "#222",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            padding: "6px 16px",
+            fontFamily: "Orbitron, sans-serif",
+            fontWeight: "bold",
+            cursor: "pointer"
+          }}
+          onClick={onClose}
+        >
+          Back to Solar System
+        </button>
+      </Html>
+    </group>
+  );
+}
+
 export default function SolarSystem() {
   const [planetParams, setPlanetParams] = useState(() =>
     planetsData.map((p, pi) => ({
@@ -569,7 +959,9 @@ export default function SolarSystem() {
   );
   const [focus, setFocus] = useState({ position: [0, 0, 0], name: "Sun" });
   const [selectedBody, setSelectedBody] = useState(null);
+  const [rocketTransfer, setRocketTransfer] = useState(null);
   const controlsRef = useRef();
+  const [cartoonEarth, setCartoonEarth] = useState(false); // <-- add cartoonEarth state
 
   // dat.GUI setup (same as your code)
   const guiRef = useRef(null);
@@ -698,42 +1090,60 @@ export default function SolarSystem() {
 
   return (
     <div style={{ width: "100vw", height: "92vh", position: "relative" }}>
+      <RocketForm planets={planetsData} onSubmit={setRocketTransfer} />
       <InfoPopup body={selectedBody} onClose={() => setSelectedBody(null)} />
       <Canvas camera={{ position: [0, 40, 220], fov: 55 }}>
-        <MilkyWay />
-        <ambientLight intensity={0.6} />
-        <pointLight position={[0, 0, 0]} intensity={2.6} color="#fffde0" />
-        <Sun size={3.2} setFocus={setFocus} />
-        {/* Asteroid belt */}
-        <AsteroidBelt count={80} inner={45} outer={55} />
-        {/* Comet */}
-        <Comet orbit={120} speed={0.04} size={0.7} color="#fff" />
-        {planetsData.map((p, i) => (
-          <group key={p.name}>
-            <OrbitRing
-              radius={planetParams[i].orbit}
-              color={orbitColors[i]}
-              width={2}
-            />
-            <Planet
-              data={p}
-              guiData={planetParams[i]}
-              setFocus={pos => {
-                setFocus(pos);
-                setSelectedBody({ ...p, ...planetParams[i] });
-              }}
-              orbitColor={orbitColors[i]}
-            />
-            {p.moons && p.moons.map((moon, mi) => (
-              <OrbitRing
-                key={moon.name}
-                radius={planetParams[i].size + planetParams[i].moons[mi].orbit}
-                color="#ff00fa"
-                width={1}
-              />
+        {cartoonEarth ? (
+          <CartoonEarth
+            position={[0, 0, 0]}
+            size={3}
+            onClose={() => setCartoonEarth(false)}
+          />
+        ) : (
+          <>
+            <MilkyWay />
+            <ambientLight intensity={0.6} />
+            <pointLight position={[0, 0, 0]} intensity={2.6} color="#fffde0" />
+            <Sun size={3.2} setFocus={setFocus} />
+            <AsteroidBelt count={80} inner={45} outer={55} />
+            <Comet orbit={120} speed={0.04} size={0.7} color="#fff" />
+            {planetsData.map((p, i) => (
+              <group key={p.name} name={p.name}>
+                <OrbitRing
+                  radius={planetParams[i].orbit}
+                  color={orbitColors[i]}
+                  width={2}
+                />
+                <Planet
+                  data={p}
+                  guiData={planetParams[i]}
+                  setFocus={pos => {
+                    setFocus(pos);
+                    setSelectedBody({ ...p, ...planetParams[i] });
+                    // If Earth is clicked, show cartoon version
+                    if (p.name === "Earth") setCartoonEarth(true);
+                  }}
+                  orbitColor={orbitColors[i]}
+                />
+                {p.moons && p.moons.map((moon, mi) => (
+                  <OrbitRing
+                    key={moon.name}
+                    radius={planetParams[i].size + planetParams[i].moons[mi].orbit}
+                    color="#ff00fa"
+                    width={1}
+                  />
+                ))}
+              </group>
             ))}
-          </group>
-        ))}
+            {rocketTransfer && (
+              <RocketTransfer
+                from={rocketTransfer.from}
+                to={rocketTransfer.to}
+                planetParams={planetParams}
+              />
+            )}
+          </>
+        )}
         <OrbitControls ref={controlsRef} />
       </Canvas>
       <div
