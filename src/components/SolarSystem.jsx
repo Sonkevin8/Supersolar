@@ -1,3 +1,31 @@
+// AsteroidBelt (restored)
+function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
+  const asteroids = useMemo(() => {
+    return Array.from({ length: count }).map((_, i) => {
+      const angle = (i / count) * Math.PI * 2 + Math.random();
+      const radius = inner + Math.random() * (outer - inner);
+      const y = (Math.random() - 0.5) * 2;
+      return { angle, radius, y, size: 0.12 + Math.random() * 0.18 };
+    });
+  }, [count, inner, outer]);
+  return (
+    <>
+      {asteroids.map((a, i) => (
+        <mesh
+          key={i}
+          position={[
+            Math.cos(a.angle) * a.radius,
+            a.y,
+            Math.sin(a.angle) * a.radius
+          ]}
+        >
+          <sphereGeometry args={[a.size, 8, 8]} />
+          <meshStandardMaterial color="#888" roughness={0.8} metalness={0.2} />
+        </mesh>
+      ))}
+    </>
+  );
+}
 import { useRef, useEffect, useState, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Html, Line } from "@react-three/drei";
