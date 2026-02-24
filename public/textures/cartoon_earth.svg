@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <circle cx="256" cy="256" r="250" fill="#3ab6ff" stroke="#1a5e9a" stroke-width="8"/>
+  <!-- Africa/Europe/Asia -->
+  <path d="M320 180 Q340 160 370 180 Q400 200 390 240 Q380 280 340 270 Q320 260 320 230 Q320 200 320 180 Z" fill="#b7d97a" stroke="#7fa34b" stroke-width="4"/>
+  <!-- North America -->
+  <path d="M170 140 Q200 120 230 140 Q250 160 230 180 Q210 200 180 180 Q160 160 170 140 Z" fill="#b7d97a" stroke="#7fa34b" stroke-width="4"/>
+  <!-- South America -->
+  <path d="M210 260 Q230 250 250 270 Q260 290 240 310 Q220 320 210 300 Q200 280 210 260 Z" fill="#b7d97a" stroke="#7fa34b" stroke-width="4"/>
+  <!-- Australia -->
+  <ellipse cx="400" cy="340" rx="18" ry="10" fill="#b7d97a" stroke="#7fa34b" stroke-width="3"/>
+  <!-- Greenland -->
+  <ellipse cx="270" cy="90" rx="18" ry="10" fill="#b7d97a" stroke="#7fa34b" stroke-width="3"/>
+  <!-- Cartoon clouds -->
+  <ellipse cx="120" cy="100" rx="30" ry="18" fill="#fff" stroke="#ccc" stroke-width="4"/>
+  <ellipse cx="400" cy="80" rx="22" ry="14" fill="#fff" stroke="#ccc" stroke-width="4"/>
+  <ellipse cx="370" cy="400" rx="28" ry="16" fill="#fff" stroke="#ccc" stroke-width="4"/>
+  <ellipse cx="120" cy="370" rx="24" ry="14" fill="#fff" stroke="#ccc" stroke-width="4"/>
+</svg>

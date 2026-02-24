@@ -804,23 +804,16 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
     [size * 0.2 + 0.1, size * 0.18, size * 0.6 - 0.1],
   ];
 
+  // Load cartoon SVG texture
+  const texture = useLoader(THREE.TextureLoader, '/textures/cartoon_earth.svg');
   return (
     <group position={position}>
       {/* Add a directional light for cartoon Earth */}
       <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
-      {/* Main blue sphere */}
+      {/* Main cartoon globe with SVG texture */}
       <mesh>
-        <sphereGeometry args={[size, 32, 32]} />
-        <meshStandardMaterial color="#3ab6ff" />
-      </mesh>
-      {/* Continents always visible, offset outward */}
-      <mesh position={[size * 0.5, size * 0.05, size * 0.7]}>
-        <sphereGeometry args={[size * 0.26, 16, 16]} />
-        <meshStandardMaterial color="#6fd47f" />
-      </mesh>
-      <mesh position={[-size * 0.4, size * 0.05, -size * 0.6]}>
-        <sphereGeometry args={[size * 0.19, 16, 16]} />
-        <meshStandardMaterial color="#6fd47f" />
+        <sphereGeometry args={[size, 64, 64]} />
+        <meshStandardMaterial map={texture} />
       </mesh>
       {/* Animated clouds, offset outward */}
       <mesh ref={cloudRef1} position={[0, size * 0.8, 0]}>
