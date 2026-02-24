@@ -898,6 +898,53 @@ function RocketTransfer({ from, to, planetParams }) {
 
 // Cartoon Earth component
 function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
+  const [zoom, setZoom] = useState(1); // 1: continents, 2: cities, 3: people
+  // Animate clouds
+  const cloudRef1 = useRef();
+  const cloudRef2 = useRef();
+  useFrame(({ clock }) => {
+    if (cloudRef1.current) {
+      cloudRef1.current.position.x = Math.sin(clock.getElapsedTime() * 0.3) * size * 0.5;
+    }
+    if (cloudRef2.current) {
+      cloudRef2.current.position.z = Math.cos(clock.getElapsedTime() * 0.2) * size * 0.6;
+    }
+  });
+
+  // Animated people (simple bouncing spheres)
+  const AnimatedPerson = ({ pos, color }) => {
+    const ref = useRef();
+    useFrame(({ clock }) => {
+      if (ref.current) {
+        ref.current.position.y = pos[1] + Math.abs(Math.sin(clock.getElapsedTime() * 2 + pos[0])) * 0.08;
+      }
+    });
+    return (
+      <mesh ref={ref} position={pos}>
+        <sphereGeometry args={[0.07, 12, 12]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+    );
+  };
+
+  // Cartoon cities (simple cubes)
+  const cities = [
+    [size * 0.5, size * 0.05, size * 0.2],
+    [-size * 0.3, size * 0.05, -size * 0.4],
+    [0, size * 0.05, -size * 0.7],
+    [size * 0.2, size * 0.05, size * 0.6],
+  ];
+  // People positions (relative to cities)
+  const people = [
+    [size * 0.5, size * 0.18, size * 0.2],
+    [size * 0.5 + 0.12, size * 0.18, size * 0.2 - 0.1],
+    [-size * 0.3, size * 0.18, -size * 0.4],
+    [-size * 0.3 - 0.1, size * 0.18, -size * 0.4 + 0.1],
+    [0, size * 0.18, -size * 0.7],
+    [size * 0.2, size * 0.18, size * 0.6],
+    [size * 0.2 + 0.1, size * 0.18, size * 0.6 - 0.1],
+  ];
+
   return (
     <group position={position}>
       {/* Main blue sphere */}
@@ -905,7 +952,7 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         <sphereGeometry args={[size, 32, 32]} />
         <meshStandardMaterial color="#3ab6ff" />
       </mesh>
-      {/* Cartoon continents */}
+      {/* Continents always visible */}
       <mesh position={[size * 0.5, 0, size * 0.7]}>
         <sphereGeometry args={[size * 0.25, 16, 16]} />
         <meshStandardMaterial color="#6fd47f" />
@@ -914,28 +961,63 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         <sphereGeometry args={[size * 0.18, 16, 16]} />
         <meshStandardMaterial color="#6fd47f" />
       </mesh>
-      {/* Cartoon clouds */}
-      <mesh position={[0, size * 0.7, 0]}>
+      {/* Animated clouds */}
+      <mesh ref={cloudRef1} position={[0, size * 0.7, 0]}>
         <sphereGeometry args={[size * 0.12, 12, 12]} />
         <meshStandardMaterial color="#fff" transparent opacity={0.7} />
       </mesh>
-      {/* Close button */}
+      <mesh ref={cloudRef2} position={[size * 0.3, size * 0.6, -size * 0.2]}>
+        <sphereGeometry args={[size * 0.09, 10, 10]} />
+        <meshStandardMaterial color="#fff" transparent opacity={0.6} />
+      </mesh>
+
+      {/* Cities (zoom >= 2) */}
+      {zoom >= 2 && cities.map((pos, i) => (
+        <mesh key={i} position={pos}>
+          <boxGeometry args={[0.18, 0.18, 0.18]} />
+          <meshStandardMaterial color="#b0b0b0" />
+        </mesh>
+      ))}
+      {/* Animated people (zoom >= 3) */}
+      {zoom >= 3 && people.map((pos, i) => (
+        <AnimatedPerson key={i} pos={pos} color={i % 2 === 0 ? '#ffb347' : '#e1642b'} />
+      ))}
+
+      {/* Zoom controls and close button */}
       <Html position={[0, size * 1.5, 0]} center>
-        <button
-          style={{
-            background: "#222",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            padding: "6px 16px",
-            fontFamily: "Orbitron, sans-serif",
-            fontWeight: "bold",
-            cursor: "pointer"
-          }}
-          onClick={onClose}
-        >
-          Back to Solar System
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+          <div>
+            <button
+              style={{
+                background: '#00ffe7', color: '#111', border: 'none', borderRadius: 6,
+                padding: '4px 12px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginRight: 8
+              }}
+              onClick={() => setZoom(z => Math.max(1, z - 1))}
+              disabled={zoom === 1}
+            >
+              Zoom Out
+            </button>
+            <button
+              style={{
+                background: '#00ffe7', color: '#111', border: 'none', borderRadius: 6,
+                padding: '4px 12px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer'
+              }}
+              onClick={() => setZoom(z => Math.min(3, z + 1))}
+              disabled={zoom === 3}
+            >
+              Zoom In
+            </button>
+          </div>
+          <button
+            style={{
+              background: '#222', color: '#fff', border: 'none', borderRadius: 8,
+              padding: '6px 16px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginTop: 6
+            }}
+            onClick={onClose}
+          >
+            Back to Solar System
+          </button>
+        </div>
       </Html>
     </group>
   );
