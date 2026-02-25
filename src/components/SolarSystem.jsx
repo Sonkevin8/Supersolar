@@ -1094,87 +1094,74 @@ export default function SolarSystem() {
   useEffect(() => {
     if (controlsRef.current) {
       controlsRef.current.target.set(...focus.position);
-      return (
-        <group position={position}>
-          {/* Add a directional light for cartoon Earth */}
-          <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
-          {/* Camera for zooming */}
-          <Canvas camera={{ position: [0, 0, cameraDistance], fov: 45 }} style={{ position: 'absolute', left: 0, top: 0, width: '100vw', height: '100vh', pointerEvents: 'none' }}>
-            {/* Main cartoon globe with accurate cartoon map */}
-            <mesh>
-              <sphereGeometry args={[size, 64, 64]} />
-              <meshStandardMaterial map={texture} />
-            </mesh>
-            {/* Animated clouds, offset outward */}
-            <mesh ref={cloudRef1} position={[0, size * 0.8, 0]}>
-              <sphereGeometry args={[size * 0.13, 12, 12]} />
-              <meshStandardMaterial color="#fff" transparent opacity={0.7} />
-            </mesh>
-            <mesh ref={cloudRef2} position={[size * 0.35, size * 0.7, -size * 0.2]}>
-              <sphereGeometry args={[size * 0.1, 10, 10]} />
-              <meshStandardMaterial color="#fff" transparent opacity={0.6} />
-            </mesh>
+    }
+  }, [focus]);
 
-            {/* Cities (zoomed in) */}
-            {cameraDistance < 8 && cities.map((pos, i) => (
-              <mesh key={i} position={[pos[0], pos[1] + 0.12, pos[2]]}>
-                <boxGeometry args={[0.22, 0.22, 0.22]} />
-                <meshStandardMaterial color="#b0b0b0" />
-              </mesh>
-            ))}
-            {/* Cartoon roads and cars (zoomed in) */}
-            {cameraDistance < 6 && roads.map((road, i) => (
-              <>
-                {/* Road as a black line */}
-                <mesh key={`road-${i}`}>
-                  <cylinderGeometry args={[0.015, 0.015, Math.sqrt(
-                    Math.pow(road[0] - road[3], 2) +
-                    Math.pow(road[1] - road[4], 2) +
-                    Math.pow(road[2] - road[5], 2)
-                  ), 12]} />
-                  <meshStandardMaterial color="#222" />
-                  <group position={[
-                    (road[0] + road[3]) / 2,
-                    (road[1] + road[4]) / 2,
-                    (road[2] + road[5]) / 2
-                  ]}
-                    rotation={[0, Math.atan2(road[5] - road[2], road[3] - road[0]), 0]}
-                  />
-                </mesh>
-                {/* Animated cars on the road */}
-                <CartoonCar key={`car-${i}`} start={[road[0], road[1], road[2]]} end={[road[3], road[4], road[5]]} color={i % 2 === 0 ? '#2196f3' : '#ff9800'} speed={0.3 + 0.2 * i} offset={i * 0.33} />
-              </>
-            ))}
-            {/* Animated people (zoomed in) */}
-            {cameraDistance < 4.5 && people.map((pos, i) => (
-              <AnimatedPerson key={i} pos={[pos[0], pos[1] + 0.18, pos[2]]} color={i % 2 === 0 ? '#ffb347' : '#e1642b'} />
-            ))}
-          </Canvas>
-          {/* Back to Solar System button at top right */}
-          <Html position={[size * 2, size * 2, 0]} style={{ position: 'absolute', right: 20, top: 20 }}>
-            <button
-              style={{
-                background: '#222', color: '#fff', border: 'none', borderRadius: 8,
-                padding: '6px 16px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginTop: 6
-              }}
-              onClick={onClose}
-            >
-              Back to Solar System
-            </button>
-          </Html>
-        </group>
-      );
+  return (
+    <div style={{ width: "100vw", height: "100vh", background: "#000" }}>
+      <Canvas
+        camera={{ position: [0, 20, 50], fov: 45 }}
+        style={{ width: "100%", height: "100%" }}
+      >
+        <PerspectiveCamera makeDefault position={[0, 20, 50]} />
+        <OrbitControls ref={controlsRef} />
+        <MilkyWay />
+        <Sun size={7} setFocus={setFocus} />
+
+        {/* Comets */}
+        <Comet orbit={15} speed={0.02} size={0.3} color="#ffff99" />
+        <Comet orbit={35} speed={0.015} size={0.25} color="#ffccff" />
+
+        {/* Asteroid belt between Mars and Jupiter */}
+        <AsteroidBelt count={80} inner={45} outer={55} />
+
+        {/* Planets */}
+        {planetsData.map((p, i) => (
+          <group key={p.name}>
+            <OrbitRing
+              radius={planetParams[i].orbit}
+              color={orbitColors[i]}
+              opacity={0.3}
+            />
+            <Planet
+              data={p}
+              guiData={planetParams[i]}
+              setFocus={setFocus}
+              orbitColor={orbitColors[i]}
+            />
+          </group>
+        ))}
+
+        {/* Rocket transfer */}
+        {rocketTransfer && (
+          <RocketTransfer
+            from={rocketTransfer.from}
+            to={rocketTransfer.to}
+            planetParams={planetParams}
+          />
+        )}
+      </Canvas>
+
+      {/* Info popup */}
+      <InfoPopup body={selectedBody} onClose={() => setSelectedBody(null)} />
+
+      {/* Focus indicator */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: 30,
+          left: 30,
+          color: "#00ffe7",
+          fontFamily: "'Orbitron', sans-serif",
           background: "rgba(0,0,0,0.5)",
           padding: "8px 16px",
           borderRadius: "8px",
           zIndex: 10,
           fontSize: "1.1em",
-          fontFamily: "'Orbitron', sans-serif",
           letterSpacing: "0.08em"
         }}
       >
         Focused: <b>{focus.name}</b>
       </div>
     </div>
-  );
 }
