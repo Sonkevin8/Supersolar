@@ -857,6 +857,13 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
 
   // Load realistic cartoon-style texture (replace with a real map if available)
   const texture = useLoader(THREE.TextureLoader, '/textures/cartoon_earth_map.svg');
+  useEffect(() => {
+    if (!texture) return;
+    texture.encoding = THREE.sRGBEncoding;
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.anisotropy = Math.min(16, renderer?.capabilities?.getMaxAnisotropy ? renderer.capabilities.getMaxAnisotropy() : 1);
+    texture.needsUpdate = true;
+  }, [texture]);
 
   // Camera zoom state (distance from center)
   const [cameraDistance, setCameraDistance] = useState(6); // Start close
