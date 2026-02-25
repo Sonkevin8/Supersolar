@@ -49,9 +49,9 @@ function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
     </>
   );
 }
-import { useRef, useEffect, useState, useMemo } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { OrbitControls, Html, Line } from "@react-three/drei";
+import { OrbitControls, Html, Line, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 
 // Texture map (all lowercase, .jpg)
@@ -1164,4 +1164,5 @@ export default function SolarSystem() {
         Focused: <b>{focus.name}</b>
       </div>
     </div>
+  );
 }
