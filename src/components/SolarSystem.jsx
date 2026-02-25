@@ -757,7 +757,8 @@ function RocketTransfer({ from, to, planetParams }) {
 
 // Cartoon Earth component
 function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
-  const [zoom, setZoom] = useState(1); // 1: continents, 2: cities, 3: people
+  // Initial zoom: start close to surface
+  const [zoom, setZoom] = useState(2); // 2: continents/cities, 3+: deeper
   // Animate clouds
   const cloudRef1 = useRef();
   const cloudRef2 = useRef();
@@ -779,8 +780,58 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
       }
     });
     return (
-      <mesh ref={ref} position={pos}>
-        <sphereGeometry args={[0.07, 12, 12]} />
+      <group ref={ref} position={pos}>
+        {/* Head */}
+        <sphereGeometry args={[0.07, 12, 12]} attach="geometry" />
+        <meshStandardMaterial color={color} attach="material" />
+        {/* Body */}
+        <mesh position={[0, -0.11, 0]}>
+          <cylinderGeometry args={[0.035, 0.035, 0.09, 8]} />
+          <meshStandardMaterial color={color === '#ffb347' ? '#ffe082' : '#e57373'} />
+        </mesh>
+        {/* Arms */}
+        <mesh position={[-0.05, -0.11, 0]} rotation={[0, 0, Math.PI / 4]}>
+          <cylinderGeometry args={[0.012, 0.012, 0.07, 8]} />
+          <meshStandardMaterial color="#ffe0b2" />
+        </mesh>
+        <mesh position={[0.05, -0.11, 0]} rotation={[0, 0, -Math.PI / 4]}>
+          <cylinderGeometry args={[0.012, 0.012, 0.07, 8]} />
+          <meshStandardMaterial color="#ffe0b2" />
+        </mesh>
+        {/* Legs */}
+        <mesh position={[-0.02, -0.19, 0]} rotation={[0, 0, 0.1]}>
+          <cylinderGeometry args={[0.012, 0.012, 0.07, 8]} />
+          <meshStandardMaterial color="#607d8b" />
+        </mesh>
+        <mesh position={[0.02, -0.19, 0]} rotation={[0, 0, -0.1]}>
+          <cylinderGeometry args={[0.012, 0.012, 0.07, 8]} />
+          <meshStandardMaterial color="#607d8b" />
+        </mesh>
+      </group>
+    );
+  };
+  // Cartoon roads (simple lines)
+  const roads = [
+    // Each road: [startX, startY, startZ, endX, endY, endZ]
+    [size * 0.5, size * 0.05, size * 0.2, size * 0.7, size * 0.05, size * 0.5],
+    [-size * 0.3, size * 0.05, -size * 0.4, -size * 0.1, size * 0.05, -size * 0.7],
+    [0, size * 0.05, -size * 0.7, size * 0.2, size * 0.05, size * 0.6],
+  ];
+
+  // Cartoon cars (small moving boxes on roads)
+  const CartoonCar = ({ start, end, color = '#2196f3', speed = 0.5, offset = 0 }) => {
+    const ref = useRef();
+    useFrame(({ clock }) => {
+      const t = ((clock.getElapsedTime() * speed + offset) % 1);
+      if (ref.current) {
+        ref.current.position.x = start[0] + (end[0] - start[0]) * t;
+        ref.current.position.y = start[1] + (end[1] - start[1]) * t + 0.04;
+        ref.current.position.z = start[2] + (end[2] - start[2]) * t;
+      }
+    });
+    return (
+      <mesh ref={ref}>
+        <boxGeometry args={[0.08, 0.04, 0.04]} />
         <meshStandardMaterial color={color} />
       </mesh>
     );
@@ -804,18 +855,28 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
     [size * 0.2 + 0.1, size * 0.18, size * 0.6 - 0.1],
   ];
 
-  // Load cartoon SVG texture
-  const texture = useLoader(THREE.TextureLoader, '/textures/cartoon_earth.svg');
+  // Load realistic cartoon-style texture (replace with a real map if available)
+  const texture = useLoader(THREE.TextureLoader, '/textures/cartoon_earth_realistic.svg');
+  // Handle zoom with mouse wheel or pinch gesture
+  useEffect(() => {
+    const handleWheel = (e) => {
+      if (e.deltaY < 0) setZoom(z => Math.min(z + 1, 5));
+      else setZoom(z => Math.max(z - 1, 2));
+    };
+    window.addEventListener('wheel', handleWheel);
+    return () => window.removeEventListener('wheel', handleWheel);
+  }, []);
+
   return (
     <group position={position}>
       {/* Add a directional light for cartoon Earth */}
       <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
-      {/* Main cartoon globe with SVG texture */}
+      {/* Main cartoon globe with realistic texture */}
       <mesh>
         <sphereGeometry args={[size, 64, 64]} />
         <meshStandardMaterial map={texture} />
       </mesh>
-      {/* Animated clouds, offset outward */}
+      {/* Animated clouds, offset outward (could be improved with real cloud map) */}
       <mesh ref={cloudRef1} position={[0, size * 0.8, 0]}>
         <sphereGeometry args={[size * 0.13, 12, 12]} />
         <meshStandardMaterial color="#fff" transparent opacity={0.7} />
@@ -832,46 +893,46 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
           <meshStandardMaterial color="#b0b0b0" />
         </mesh>
       ))}
+
+      {/* Cartoon roads and cars (zoom >= 3) */}
+      {zoom >= 3 && roads.map((road, i) => (
+        <>
+          {/* Road as a black line */}
+          <mesh key={`road-${i}`}>
+            <cylinderGeometry args={[0.015, 0.015, Math.sqrt(
+              Math.pow(road[0] - road[3], 2) +
+              Math.pow(road[1] - road[4], 2) +
+              Math.pow(road[2] - road[5], 2)
+            ), 12]} />
+            <meshStandardMaterial color="#222" />
+            <group position={[
+              (road[0] + road[3]) / 2,
+              (road[1] + road[4]) / 2,
+              (road[2] + road[5]) / 2
+            ]}
+              rotation={[0, Math.atan2(road[5] - road[2], road[3] - road[0]), 0]}
+            />
+          </mesh>
+          {/* Animated cars on the road */}
+          <CartoonCar key={`car-${i}`} start={[road[0], road[1], road[2]]} end={[road[3], road[4], road[5]]} color={i % 2 === 0 ? '#2196f3' : '#ff9800'} speed={0.3 + 0.2 * i} offset={i * 0.33} />
+        </>
+      ))}
       {/* Animated people (zoom >= 3), offset outward */}
       {zoom >= 3 && people.map((pos, i) => (
         <AnimatedPerson key={i} pos={[pos[0], pos[1] + 0.18, pos[2]]} color={i % 2 === 0 ? '#ffb347' : '#e1642b'} />
       ))}
 
-      {/* Zoom controls and close button */}
-      <Html position={[0, size * 1.5, 0]} center>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-          <div>
-            <button
-              style={{
-                background: '#00ffe7', color: '#111', border: 'none', borderRadius: 6,
-                padding: '4px 12px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginRight: 8
-              }}
-              onClick={() => setZoom(z => Math.max(1, z - 1))}
-              disabled={zoom === 1}
-            >
-              Zoom Out
-            </button>
-            <button
-              style={{
-                background: '#00ffe7', color: '#111', border: 'none', borderRadius: 6,
-                padding: '4px 12px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer'
-              }}
-              onClick={() => setZoom(z => Math.min(3, z + 1))}
-              disabled={zoom === 3}
-            >
-              Zoom In
-            </button>
-          </div>
-          <button
-            style={{
-              background: '#222', color: '#fff', border: 'none', borderRadius: 8,
-              padding: '6px 16px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginTop: 6
-            }}
-            onClick={onClose}
-          >
-            Back to Solar System
-          </button>
-        </div>
+      {/* Back to Solar System button at top right */}
+      <Html position={[size * 2, size * 2, 0]} style={{ position: 'absolute', right: 20, top: 20 }}>
+        <button
+          style={{
+            background: '#222', color: '#fff', border: 'none', borderRadius: 8,
+            padding: '6px 16px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginTop: 6
+          }}
+          onClick={onClose}
+        >
+          Back to Solar System
+        </button>
       </Html>
     </group>
   );
