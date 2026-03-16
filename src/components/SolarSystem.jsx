@@ -1,58 +1,35 @@
+import { useRef, useEffect, useState, useMemo } from "react";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { OrbitControls, Html, Line } from "@react-three/drei";
+import * as THREE from "three";
+
 // Comet (restored)
 function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
   const meshRef = useRef();
   useFrame(({ clock }) => {
     const t = clock.getElapsedTime();
-    const angle = speed * t + 1.5;
-    meshRef.current.position.x = orbit * Math.cos(angle);
-    meshRef.current.position.z = orbit * Math.sin(angle);
-    meshRef.current.position.y = Math.sin(angle * 2) * 10;
-    meshRef.current.rotation.y += 0.02;
+    if (meshRef.current) {
+      meshRef.current.position.x = Math.cos(speed * t) * orbit;
+      meshRef.current.position.z = Math.sin(speed * t) * orbit;
+      meshRef.current.position.y = Math.sin(speed * t * 0.5) * 10;
+      meshRef.current.rotation.y += 0.01;
+    }
   });
+
   return (
-    <mesh ref={meshRef}>
-      <sphereGeometry args={[size, 16, 16]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1} />
+    <group ref={meshRef}>
+      <mesh>
+        <sphereGeometry args={[size, 32, 32]} />
+        <meshStandardMaterial color={color} emissive="#fff" />
+      </mesh>
       {/* Comet tail */}
       <mesh position={[0, 0, -size * 2]}>
-        <coneGeometry args={[size * 0.3, size * 3, 8]} />
-        <meshBasicMaterial color={color} transparent opacity={0.5} />
+        <coneGeometry args={[size * 0.3, size * 2.5, 16]} />
+        <meshStandardMaterial color="#fff" transparent opacity={0.6} />
       </mesh>
-    </mesh>
+    </group>
   );
 }
-// AsteroidBelt (restored)
-function AsteroidBelt({ count = 80, inner = 45, outer = 55 }) {
-  const asteroids = useMemo(() => {
-    return Array.from({ length: count }).map((_, i) => {
-      const angle = (i / count) * Math.PI * 2 + Math.random();
-      const radius = inner + Math.random() * (outer - inner);
-      const y = (Math.random() - 0.5) * 2;
-      return { angle, radius, y, size: 0.12 + Math.random() * 0.18 };
-    });
-  }, [count, inner, outer]);
-  return (
-    <>
-      {asteroids.map((a, i) => (
-        <mesh
-          key={i}
-          position={[
-            Math.cos(a.angle) * a.radius,
-            a.y,
-            Math.sin(a.angle) * a.radius
-          ]}
-        >
-          <sphereGeometry args={[a.size, 8, 8]} />
-          <meshStandardMaterial color="#888" roughness={0.8} metalness={0.2} />
-        </mesh>
-      ))}
-    </>
-  );
-}
-import { useRef, useEffect, useState, useMemo } from "react";
-import { Canvas, useFrame, useLoader } from "@react-three/fiber";
-import { OrbitControls, Html, Line } from "@react-three/drei";
-import * as THREE from "three";
 
 // Texture map (all lowercase, .jpg)
 const PLANET_TEXTURES = {
@@ -856,25 +833,12 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
   ];
 
   // Load realistic cartoon-style texture (replace with a real map if available)
-  const texture = useLoader(THREE.TextureLoader, '/textures/cartoon_earth_map.svg');
-
-  // Camera zoom state (distance from center)
-  const [cameraDistance, setCameraDistance] = useState(6); // Start close
-  const minDistance = 2.5; // Closest zoom
-  const maxDistance = 12; // Farthest zoom
-
-  // Reference to the camera
-  const cameraRef = useRef();
+  const texture = useLoader(THREE.TextureLoader, '/textures/cartoon_earth_realistic.svg');
   // Handle zoom with mouse wheel or pinch gesture
-  // Handle zoom with mouse wheel or pinch gesture (true camera zoom)
   useEffect(() => {
     const handleWheel = (e) => {
-      setCameraDistance(d => {
-        let next = d + (e.deltaY > 0 ? 0.7 : -0.7);
-        if (next < minDistance) next = minDistance;
-        if (next > maxDistance) next = maxDistance;
-        return next;
-      });
+      if (e.deltaY < 0) setZoom(z => Math.min(z + 1, 5));
+      else setZoom(z => Math.max(z - 1, 2));
     };
     window.addEventListener('wheel', handleWheel);
     return () => window.removeEventListener('wheel', handleWheel);
@@ -1094,65 +1058,74 @@ export default function SolarSystem() {
   useEffect(() => {
     if (controlsRef.current) {
       controlsRef.current.target.set(...focus.position);
+      controlsRef.current.update();
     }
   }, [focus]);
 
   return (
-    <div style={{ width: "100vw", height: "100vh", background: "#000" }}>
-      <Canvas
-        camera={{ position: [0, 20, 50], fov: 45 }}
-        style={{ width: "100%", height: "100%" }}
-      >
-        <PerspectiveCamera makeDefault position={[0, 20, 50]} />
-        <OrbitControls ref={controlsRef} />
-        <MilkyWay />
-        <Sun size={7} setFocus={setFocus} />
-
-        {/* Comets */}
-        <Comet orbit={15} speed={0.02} size={0.3} color="#ffff99" />
-        <Comet orbit={35} speed={0.015} size={0.25} color="#ffccff" />
-
-        {/* Asteroid belt between Mars and Jupiter */}
-        <AsteroidBelt count={80} inner={45} outer={55} />
-
-        {/* Planets */}
-        {planetsData.map((p, i) => (
-          <group key={p.name}>
-            <OrbitRing
-              radius={planetParams[i].orbit}
-              color={orbitColors[i]}
-              opacity={0.3}
-            />
-            <Planet
-              data={p}
-              guiData={planetParams[i]}
-              setFocus={setFocus}
-              orbitColor={orbitColors[i]}
-            />
-          </group>
-        ))}
-
-        {/* Rocket transfer */}
-        {rocketTransfer && (
-          <RocketTransfer
-            from={rocketTransfer.from}
-            to={rocketTransfer.to}
-            planetParams={planetParams}
-          />
-        )}
-      </Canvas>
-
-      {/* Info popup */}
+    <div style={{ width: "100vw", height: "92vh", position: "relative" }}>
+      <RocketForm planets={planetsData} onSubmit={setRocketTransfer} />
       <InfoPopup body={selectedBody} onClose={() => setSelectedBody(null)} />
-
-      {/* Focus indicator */}
+      <Canvas camera={{ position: [0, 40, 220], fov: 55 }}>
+        {cartoonEarth ? (
+          <CartoonEarth
+            position={[0, 0, 0]}
+            size={3}
+            onClose={() => setCartoonEarth(false)}
+          />
+        ) : (
+          <>
+            <MilkyWay />
+            <ambientLight intensity={0.6} />
+            <pointLight position={[0, 0, 0]} intensity={2.6} color="#fffde0" />
+            <Sun size={3.2} setFocus={setFocus} />
+            <AsteroidBelt count={80} inner={45} outer={55} />
+            <Comet orbit={120} speed={0.04} size={0.7} color="#fff" />
+            {planetsData.map((p, i) => (
+              <group key={p.name} name={p.name}>
+                <OrbitRing
+                  radius={planetParams[i].orbit}
+                  color={orbitColors[i]}
+                  width={2}
+                />
+                <Planet
+                  data={p}
+                  guiData={planetParams[i]}
+                  setFocus={pos => {
+                    setFocus(pos);
+                    setSelectedBody({ ...p, ...planetParams[i] });
+                    // If Earth is clicked, show cartoon version
+                    if (p.name === "Earth") setCartoonEarth(true);
+                  }}
+                  orbitColor={orbitColors[i]}
+                />
+                {p.moons && p.moons.map((moon, mi) => (
+                  <OrbitRing
+                    key={moon.name}
+                    radius={planetParams[i].size + planetParams[i].moons[mi].orbit}
+                    color="#ff00fa"
+                    width={1}
+                  />
+                ))}
+              </group>
+            ))}
+            {rocketTransfer && (
+              <RocketTransfer
+                from={rocketTransfer.from}
+                to={rocketTransfer.to}
+                planetParams={planetParams}
+              />
+            )}
+          </>
+        )}
+        <OrbitControls ref={controlsRef} />
+      </Canvas>
       <div
         style={{
-          position: "fixed",
-          bottom: 30,
-          left: 30,
-          color: "#00ffe7",
-          fontFamily: "'Orbitron', sans-serif",
+          position: "absolute",
+          left: 20,
+          top: 20,
+          color: "#fff",
           background: "rgba(0,0,0,0.5)",
           padding: "8px 16px",
           borderRadius: "8px",
@@ -1164,4 +1137,5 @@ export default function SolarSystem() {
         Focused: <b>{focus.name}</b>
       </div>
     </div>
+  );
 }
