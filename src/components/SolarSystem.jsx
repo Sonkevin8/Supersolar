@@ -31,6 +31,35 @@ function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
   );
 }
 
+// AsteroidBelt
+function AsteroidBelt({ count = 50, inner = 35, outer = 50 }) {
+  const asteroids = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      const radius = inner + Math.random() * (outer - inner);
+      const theta = Math.random() * Math.PI * 2;
+      const phi = (Math.random() - 0.5) * Math.PI * 0.1; // slight inclination
+      const x = radius * Math.cos(theta) * Math.cos(phi);
+      const y = radius * Math.sin(phi) * 5; // flatten a bit
+      const z = radius * Math.sin(theta) * Math.cos(phi);
+      const size = 0.05 + Math.random() * 0.1;
+      arr.push({ position: [x, y, z], size });
+    }
+    return arr;
+  }, [count, inner, outer]);
+
+  return (
+    <group>
+      {asteroids.map((asteroid, i) => (
+        <mesh key={i} position={asteroid.position}>
+          <sphereGeometry args={[asteroid.size, 8, 8]} />
+          <meshStandardMaterial color="#8B7355" />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
 // Texture map (all lowercase, .jpg)
 const PLANET_TEXTURES = {
   mercury: "/textures/mercury.jpg",
