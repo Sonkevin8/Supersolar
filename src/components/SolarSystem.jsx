@@ -9,7 +9,6 @@ function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent);
 }
 
-// Comet (restored)
 function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
   const meshRef = useRef();
   useFrame(({ clock }) => {
@@ -28,17 +27,16 @@ function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
         <sphereGeometry args={[size, 32, 32]} />
         <meshStandardMaterial color={color} emissive="#fff" />
       </mesh>
-      {/* Comet tail */}
-      <mesh position={[0, 0, -size * 2]}>
-        <coneGeometry args={[size * 0.3, size * 2.5, 16]} />
-        <meshStandardMaterial color="#fff" transparent opacity={0.6} />
-      </mesh>
+      {/* Optionally add a tail here */}
     </group>
   );
 }
 
 // AsteroidBelt
 function AsteroidBelt({ count = 50, inner = 35, outer = 50 }) {
+  // ...existing code...
+
+  export default Comet;
   const asteroids = useMemo(() => {
     const arr = [];
     for (let i = 0; i < count; i++) {
