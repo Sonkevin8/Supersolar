@@ -112,7 +112,8 @@ const ORBITAL_PERIODS = {
 // Angular speed = 2 * PI / period (period in years, 1s = 1 year in sim)
 
 // Time scaling: 1 real second = N simulated years
-const TIME_SCALE = 0.05; // 0.05 = 1 real second = 0.05 years (about 18 days)
+const PLANET_TIME_SCALE = 0.01; // Slower for planets
+const MOON_TIME_SCALE = 0.003;  // Even slower for moons
 const planetsData = [
   {
     name: "Mercury",
@@ -401,12 +402,12 @@ function InfoPopup({ body, onClose }) {
 }
 
 // MilkyWay
-function MilkyWay() {
+function MilkyWay({ dim = false }) {
   const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.milkyway);
   return (
     <mesh scale={[-1, 1, 1]}>
       <sphereGeometry args={[200, 64, 64]} />
-      <meshBasicMaterial map={texture} side={THREE.BackSide} />
+      <meshBasicMaterial map={texture} side={THREE.BackSide} opacity={dim ? 0.18 : 0.7} transparent />
     </mesh>
   );
 }
@@ -434,7 +435,7 @@ function Planet({ data, guiData, setFocus, orbitColor }) {
     : null;
   const meshRef = useRef();
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime() * TIME_SCALE;
+    const t = clock.getElapsedTime() * PLANET_TIME_SCALE;
     meshRef.current.position.x =
       guiData.orbit * Math.cos(guiData.speed * t + guiData.offset);
     meshRef.current.position.z =
@@ -525,7 +526,7 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   const meshRef = useRef();
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime() * TIME_SCALE;
+    const t = clock.getElapsedTime() * MOON_TIME_SCALE;
     meshRef.current.position.x =
       (planetSize + moonGuiData.orbit) *
       Math.cos(moonGuiData.speed * t + planetOffset);
@@ -1157,7 +1158,7 @@ export default function SolarSystem() {
           />
         ) : (
           <>
-            <MilkyWay />
+            <MilkyWay dim={focus.name === "Earth"} />
             <ambientLight intensity={0.6} />
             <pointLight position={[0, 0, 0]} intensity={2.6} color="#fffde0" />
             <Sun size={3.2} setFocus={setFocus} />
