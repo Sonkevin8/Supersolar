@@ -808,7 +808,11 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
   // Animate clouds
   const cloudRef1 = useRef();
   const cloudRef2 = useRef();
+  const earthRef = useRef();
   useFrame(({ clock }) => {
+    if (earthRef.current) {
+      earthRef.current.rotation.y = clock.getElapsedTime() * 0.15; // Spin Earth
+    }
     if (cloudRef1.current) {
       cloudRef1.current.position.x = Math.sin(clock.getElapsedTime() * 0.3) * size * 0.5;
     }
@@ -946,8 +950,8 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
       <group position={position}>
         {/* Add a directional light for cartoon Earth */}
         <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
-        {/* Main globe with realistic texture */}
-        <mesh>
+        {/* Main globe with realistic texture, now spinning */}
+        <mesh ref={earthRef}>
           <sphereGeometry args={[size, 64, 64]} />
           <meshStandardMaterial map={texture} />
         </mesh>
