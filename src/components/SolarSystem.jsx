@@ -3,6 +3,12 @@ import { Canvas, useFrame, useLoader } from "@react-three/fiber";
 import { OrbitControls, Html, Line } from "@react-three/drei";
 import * as THREE from "three";
 
+// Utility to detect mobile
+function isMobile() {
+  if (typeof window === 'undefined') return false;
+  return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent);
+}
+
 // Comet (restored)
 function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
   const meshRef = useRef();
@@ -978,7 +984,7 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
       </group>
       {/* OrbitControls for zoom-to-cursor in CartoonEarth */}
       <OrbitControls
-        zoomToCursor={true}
+        zoomToCursor={!isMobile()}
         enableZoom={true}
         enablePan={false}
         enableRotate={true}
@@ -1225,7 +1231,7 @@ export default function SolarSystem() {
           enableRotate={true}
           minDistance={1}
           maxDistance={200}
-          zoomToCursor={true}
+          zoomToCursor={!isMobile()}
         />
       </Canvas>
       {/* White screen overlay (boot/fade-in) */}
