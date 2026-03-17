@@ -811,7 +811,7 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
   const earthRef = useRef();
   useFrame(({ clock }) => {
     if (earthRef.current) {
-      earthRef.current.rotation.y = clock.getElapsedTime() * 0.15; // Spin Earth
+      earthRef.current.rotation.y = clock.getElapsedTime() * 0.0075; // Spin Earth (5% speed)
     }
     if (cloudRef1.current) {
       cloudRef1.current.position.x = Math.sin(clock.getElapsedTime() * 0.3) * size * 0.5;
