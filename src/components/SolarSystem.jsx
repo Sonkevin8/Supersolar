@@ -535,9 +535,9 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
     // Make Mars moons much slower (5% of current), others as before
     let moonTimeScale = MOON_TIME_SCALE;
     if (data.planetName === "Mars") {
-      moonTimeScale = MOON_TIME_SCALE * 0.05; // 20x slower (5% of original)
+      moonTimeScale = MOON_TIME_SCALE * 0.05 * 0.05; // 5% of current (0.25% of original)
     } else if (data.planetName === "Jupiter") {
-      moonTimeScale = MOON_TIME_SCALE * 0.1; // 10x slower (10% of original)
+      moonTimeScale = MOON_TIME_SCALE * 0.1 * 0.05; // 5% of current (0.5% of original)
     } else if (["Neptune", "Venus"].includes(data.planetName)) {
       moonTimeScale = MOON_TIME_SCALE * 0.3; // 3x slower
     }
@@ -909,8 +909,19 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
     [size * 0.2 + 0.1, size * 0.18, size * 0.6 - 0.1],
   ];
 
-  // Use the same Earth texture as the main solar system
-  const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.earth);
+  // Use the same Earth texture as the main solar system, with fallback and error logging
+  let texture = null;
+  try {
+    texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.earth);
+    if (!texture) {
+      // eslint-disable-next-line no-console
+      console.warn('Earth texture failed to load, using fallback color.');
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Error loading Earth texture:', e);
+    texture = null;
+  }
 
   // Demo cities: [name, lat, lon]
   const demoCities = [
@@ -957,7 +968,11 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         {/* Main globe with realistic texture, now spinning */}
         <mesh ref={earthRef}>
           <sphereGeometry args={[size, 64, 64]} />
-          <meshStandardMaterial map={texture} />
+          {texture ? (
+            <meshStandardMaterial map={texture} />
+          ) : (
+            <meshStandardMaterial color="#888" />
+          )}
         </mesh>
         {/* Demo cities as glowing markers */}
         {demoCities.map((city, i) => {
