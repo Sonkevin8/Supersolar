@@ -908,45 +908,46 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
   }, []);
 
   return (
-    <group position={position}>
-      {/* Add a directional light for cartoon Earth */}
-      <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
-      {/* Main cartoon globe with realistic texture */}
-      <mesh>
-        <sphereGeometry args={[size, 64, 64]} />
-        <meshStandardMaterial map={texture} />
-      </mesh>
-      {/* Animated clouds, offset outward (could be improved with real cloud map) */}
-      <mesh ref={cloudRef1} position={[0, size * 0.8, 0]}>
-        <sphereGeometry args={[size * 0.13, 12, 12]} />
-        <meshStandardMaterial color="#fff" transparent opacity={0.7} />
-      </mesh>
-      <mesh ref={cloudRef2} position={[size * 0.35, size * 0.7, -size * 0.2]}>
-        <sphereGeometry args={[size * 0.1, 10, 10]} />
-        <meshStandardMaterial color="#fff" transparent opacity={0.6} />
-      </mesh>
-
-      {/* Cities (zoom >= 2), offset outward */}
-      {zoom >= 2 && cities.map((pos, i) => (
-        <mesh key={i} position={[pos[0], pos[1] + 0.12, pos[2]]}>
-          <boxGeometry args={[0.22, 0.22, 0.22]} />
-          <meshStandardMaterial color="#b0b0b0" />
+    <>
+      <group position={position}>
+        {/* Add a directional light for cartoon Earth */}
+        <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
+        {/* Main cartoon globe with realistic texture */}
+        <mesh>
+          <sphereGeometry args={[size, 64, 64]} />
+          <meshStandardMaterial map={texture} />
         </mesh>
-      ))}
+        {/* Animated clouds, offset outward (could be improved with real cloud map) */}
+        <mesh ref={cloudRef1} position={[0, size * 0.8, 0]}>
+          <sphereGeometry args={[size * 0.13, 12, 12]} />
+          <meshStandardMaterial color="#fff" transparent opacity={0.7} />
+        </mesh>
+        <mesh ref={cloudRef2} position={[size * 0.35, size * 0.7, -size * 0.2]}>
+          <sphereGeometry args={[size * 0.1, 10, 10]} />
+          <meshStandardMaterial color="#fff" transparent opacity={0.6} />
+        </mesh>
 
-      {/* Cartoon roads and cars (zoom >= 3) */}
-      {zoom >= 3 && roads.map((road, i) => (
-        <>
-          {/* Road as a black line */}
-          <mesh key={`road-${i}`}>
-            <cylinderGeometry args={[0.015, 0.015, Math.sqrt(
-              Math.pow(road[0] - road[3], 2) +
-              Math.pow(road[1] - road[4], 2) +
-              Math.pow(road[2] - road[5], 2)
-            ), 12]} />
-            <meshStandardMaterial color="#222" />
-            <group position={[
-              (road[0] + road[3]) / 2,
+        {/* Cities (zoom >= 2), offset outward */}
+        {zoom >= 2 && cities.map((pos, i) => (
+          <mesh key={i} position={[pos[0], pos[1] + 0.12, pos[2]]}>
+            <boxGeometry args={[0.22, 0.22, 0.22]} />
+            <meshStandardMaterial color="#b0b0b0" />
+          </mesh>
+        ))}
+
+        {/* Cartoon roads and cars (zoom >= 3) */}
+        {zoom >= 3 && roads.map((road, i) => (
+          <>
+            {/* Road as a black line */}
+            <mesh key={`road-${i}`}>
+              <cylinderGeometry args={[0.015, 0.015, Math.sqrt(
+                Math.pow(road[0] - road[3], 2) +
+                Math.pow(road[1] - road[4], 2) +
+                Math.pow(road[2] - road[5], 2)
+              ), 12]} />
+              <meshStandardMaterial color="#222" />
+              <group position={[
+                (road[0] + road[3]) / 2,
               (road[1] + road[4]) / 2,
               (road[2] + road[5]) / 2
             ]}
@@ -962,19 +963,22 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         <AnimatedPerson key={i} pos={[pos[0], pos[1] + 0.18, pos[2]]} color={i % 2 === 0 ? '#ffb347' : '#e1642b'} />
       ))}
 
-      {/* Back to Solar System button at top right */}
-      <Html position={[size * 2, size * 2, 0]} style={{ position: 'absolute', right: 20, top: 20 }}>
-        <button
-          style={{
-            background: '#222', color: '#fff', border: 'none', borderRadius: 8,
-            padding: '6px 16px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginTop: 6
-          }}
-          onClick={onClose}
-        >
-          Back to Solar System
-        </button>
-      </Html>
-    </group>
+        {/* Back to Solar System button at top right */}
+        <Html position={[size * 2, size * 2, 0]} style={{ position: 'absolute', right: 20, top: 20 }}>
+          <button
+            style={{
+              background: '#222', color: '#fff', border: 'none', borderRadius: 8,
+              padding: '6px 16px', fontFamily: 'Orbitron, sans-serif', fontWeight: 'bold', cursor: 'pointer', marginTop: 6
+            }}
+            onClick={onClose}
+          >
+            Back to Solar System
+          </button>
+        </Html>
+      </group>
+      {/* OrbitControls for zoom-to-cursor in CartoonEarth */}
+      <OrbitControls zoomToCursor={true} enableZoom={true} enablePan={true} enableRotate={true} minDistance={0.5} maxDistance={20} />
+    </>
   );
 }
 
@@ -1213,6 +1217,7 @@ export default function SolarSystem() {
           enableRotate={true}
           minDistance={1}
           maxDistance={200}
+          zoomToCursor={true}
         />
       </Canvas>
       {/* White screen overlay (boot/fade-in) */}
