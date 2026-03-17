@@ -532,8 +532,12 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   const meshRef = useRef();
 
   useFrame(({ clock }) => {
-    // Slow down all moons for realism
-    const t = clock.getElapsedTime() * MOON_TIME_SCALE;
+    // Make Mars, Neptune, Venus, and Jupiter moons even slower
+    let moonTimeScale = MOON_TIME_SCALE;
+    if (["Mars", "Neptune", "Venus", "Jupiter"].includes(data.planetName)) {
+      moonTimeScale = MOON_TIME_SCALE * 0.3; // 3x slower
+    }
+    const t = clock.getElapsedTime() * moonTimeScale;
     meshRef.current.position.x =
       (planetSize + moonGuiData.orbit) *
       Math.cos(moonGuiData.speed * t + planetOffset);
@@ -1036,15 +1040,28 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         </Html>
       </group>
       {/* OrbitControls for zoom-to-cursor in CartoonEarth */}
-      <OrbitControls
-        zoomToCursor={!isMobile()}
-        enableZoom={true}
-        enablePan={false}
-        enableRotate={true}
-        minDistance={0.5}
-        maxDistance={20}
-        target={[0, 0, 0]}
-      />
+      {(() => {
+        const controlsRef = useRef();
+        // Force target to [0,0,0] every frame
+        useFrame(() => {
+          if (controlsRef.current) {
+            controlsRef.current.target.set(0, 0, 0);
+            controlsRef.current.update();
+          }
+        });
+        return (
+          <OrbitControls
+            ref={controlsRef}
+            zoomToCursor={!isMobile()}
+            enableZoom={true}
+            enablePan={false}
+            enableRotate={true}
+            minDistance={0.5}
+            maxDistance={20}
+            target={[0, 0, 0]}
+          />
+        );
+      })()}
     </>
   );
 }
