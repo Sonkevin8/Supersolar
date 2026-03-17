@@ -977,7 +977,15 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         </Html>
       </group>
       {/* OrbitControls for zoom-to-cursor in CartoonEarth */}
-      <OrbitControls zoomToCursor={true} enableZoom={true} enablePan={true} enableRotate={true} minDistance={0.5} maxDistance={20} />
+      <OrbitControls
+        zoomToCursor={true}
+        enableZoom={true}
+        enablePan={false}
+        enableRotate={true}
+        minDistance={0.5}
+        maxDistance={20}
+        target={[0, 0, 0]}
+      />
     </>
   );
 }
