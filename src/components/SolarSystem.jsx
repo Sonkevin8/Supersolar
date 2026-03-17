@@ -96,6 +96,20 @@ const planetFacts = {
   Moon: "Earth's only natural satellite."
 };
 
+// Orbital periods in Earth years
+const ORBITAL_PERIODS = {
+  Mercury: 0.24,
+  Venus: 0.62,
+  Earth: 1,
+  Mars: 1.88,
+  Jupiter: 11.86,
+  Saturn: 29.46,
+  Uranus: 84.01,
+  Neptune: 164.8,
+  Pluto: 248
+};
+
+// Angular speed = 2 * PI / period (period in years, 1s = 1 year in sim)
 const planetsData = [
   {
     name: "Mercury",
@@ -103,7 +117,7 @@ const planetsData = [
     color: "#b5b5b5",
     size: 0.38,
     orbit: 10,
-    speed: 0.24 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Mercury,
     moons: []
   },
   {
@@ -112,7 +126,7 @@ const planetsData = [
     color: "#eec97d",
     size: 0.95,
     orbit: 15,
-    speed: 0.18 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Venus,
     moons: []
   },
   {
@@ -121,7 +135,7 @@ const planetsData = [
     color: "#4a90e2",
     size: 1,
     orbit: 20,
-    speed: 0.15 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Earth,
     moons: [
       {
         name: "Moon",
@@ -129,7 +143,8 @@ const planetsData = [
         color: "#cccccc",
         size: 0.27,
         orbit: 2,
-        speed: 1.5 * 0.01
+        // Moon's period: 0.0748 years (27.3 days)
+        speed: (2 * Math.PI) / 0.0748
       }
     ]
   },
@@ -139,7 +154,7 @@ const planetsData = [
     color: "#e1642b",
     size: 0.53,
     orbit: 27,
-    speed: 0.13 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Mars,
     moons: [
       {
         name: "Phobos",
@@ -147,7 +162,8 @@ const planetsData = [
         color: "#bbbbbb",
         size: 0.11,
         orbit: 1.2,
-        speed: 2.5 * 0.01
+        // Phobos period: 0.000319 years (0.319 days)
+        speed: (2 * Math.PI) / 0.000319
       },
       {
         name: "Deimos",
@@ -155,7 +171,8 @@ const planetsData = [
         color: "#bbbbbb",
         size: 0.06,
         orbit: 1.7,
-        speed: 1.2 * 0.01
+        // Deimos period: 0.001263 years (1.263 days)
+        speed: (2 * Math.PI) / 0.001263
       }
     ]
   },
@@ -165,7 +182,7 @@ const planetsData = [
     color: "#fff3c2",
     size: 11.2,
     orbit: 40,
-    speed: 0.08 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Jupiter,
     moons: [
       {
         name: "Io",
@@ -173,7 +190,8 @@ const planetsData = [
         color: "#e6e27a",
         size: 0.29,
         orbit: 2.5,
-        speed: 2.2 * 0.01
+        // Io period: 0.0048 years (1.769 days)
+        speed: (2 * Math.PI) / 0.0048
       }
     ]
   },
@@ -183,7 +201,7 @@ const planetsData = [
     color: "#e7d19a",
     size: 9.45,
     orbit: 55,
-    speed: 0.06 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Saturn,
     moons: [
       {
         name: "Titan",
@@ -191,7 +209,8 @@ const planetsData = [
         color: "#e6be8a",
         size: 0.4,
         orbit: 3,
-        speed: 1.7 * 0.01
+        // Titan period: 0.0492 years (15.95 days)
+        speed: (2 * Math.PI) / 0.0492
       }
     ]
   },
@@ -201,7 +220,7 @@ const planetsData = [
     color: "#7fffff",
     size: 4,
     orbit: 70,
-    speed: 0.04 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Uranus,
     moons: [
       {
         name: "Miranda",
@@ -209,7 +228,8 @@ const planetsData = [
         color: "#d8e6ff",
         size: 0.12,
         orbit: 2.2,
-        speed: 1.2 * 0.01
+        // Miranda period: 0.0016 years (1.41 days)
+        speed: (2 * Math.PI) / 0.0016
       }
     ]
   },
@@ -219,7 +239,7 @@ const planetsData = [
     color: "#417fff",
     size: 3.88,
     orbit: 85,
-    speed: 0.03 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Neptune,
     moons: [
       {
         name: "Triton",
@@ -227,7 +247,8 @@ const planetsData = [
         color: "#b3cfff",
         size: 0.21,
         orbit: 2.5,
-        speed: 1.1 * 0.01
+        // Triton period: 0.008 years (5.88 days)
+        speed: (2 * Math.PI) / 0.008
       }
     ]
   },
@@ -237,7 +258,7 @@ const planetsData = [
     color: "#cccccc",
     size: 0.18,
     orbit: 100,
-    speed: 0.02 * 0.01,
+    speed: (2 * Math.PI) / ORBITAL_PERIODS.Pluto,
     moons: [
       {
         name: "Charon",
@@ -245,7 +266,8 @@ const planetsData = [
         color: "#bbbbbb",
         size: 0.09,
         orbit: 1.5,
-        speed: 0.8 * 0.01
+        // Charon period: 0.159 years (58.6 days)
+        speed: (2 * Math.PI) / 0.159
       }
     ]
   }
@@ -1093,9 +1115,14 @@ export default function SolarSystem() {
               );
             });
           }
+          moonFolder.close();
         });
-        folder.open();
+        folder.close();
       });
+      // Hide the GUI by default
+      if (guiInstance.domElement) {
+        guiInstance.domElement.style.display = 'none';
+      }
     });
 
     return () => {
@@ -1227,32 +1254,7 @@ export default function SolarSystem() {
         >
           <span style={{ fontWeight: 500 }}>Focused:</span> <span style={{ fontWeight: 600 }}>{focus.name}</span>
         </div>
-        <button
-          style={{
-            marginRight: 16,
-            background: 'rgba(0,0,0,0.5)',
-            padding: '2px 10px',
-            borderRadius: 5,
-            fontSize: '0.95em',
-            fontWeight: 600,
-            border: 'none',
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-            boxShadow: '0 1px 4px #0002',
-            color: '#fff',
-            fontFamily: 'Orbitron, sans-serif'
-          }}
-          onClick={() => {
-            if (window.guiRef && window.guiRef.current) {
-              window.guiRef.current.show();
-            } else {
-              const guiEl = document.getElementById('gui');
-              if (guiEl) guiEl.style.display = '';
-            }
-          }}
-        >
-          Open Controls
-        </button>
+        {/* Open Controls button removed (duplicate) */}
       </div>
     </div>
   );
