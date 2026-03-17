@@ -532,9 +532,13 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   const meshRef = useRef();
 
   useFrame(({ clock }) => {
-    // Make Mars, Neptune, Venus, and Jupiter moons even slower
+    // Make Mars moons much slower (5% of current), others as before
     let moonTimeScale = MOON_TIME_SCALE;
-    if (["Mars", "Neptune", "Venus", "Jupiter"].includes(data.planetName)) {
+    if (data.planetName === "Mars") {
+      moonTimeScale = MOON_TIME_SCALE * 0.05; // 20x slower (5% of original)
+    } else if (data.planetName === "Jupiter") {
+      moonTimeScale = MOON_TIME_SCALE * 0.1; // 10x slower (10% of original)
+    } else if (["Neptune", "Venus"].includes(data.planetName)) {
       moonTimeScale = MOON_TIME_SCALE * 0.3; // 3x slower
     }
     const t = clock.getElapsedTime() * moonTimeScale;
@@ -1042,11 +1046,15 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
       {/* OrbitControls for zoom-to-cursor in CartoonEarth */}
       {(() => {
         const controlsRef = useRef();
-        // Force target to [0,0,0] every frame
+        const { camera } = useThree();
+        // Force target to [0,0,0] every frame and set camera up
         useFrame(() => {
           if (controlsRef.current) {
             controlsRef.current.target.set(0, 0, 0);
             controlsRef.current.update();
+          }
+          if (camera) {
+            camera.up.set(0, 1, 0);
           }
         });
         return (
@@ -1056,6 +1064,8 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
             enableZoom={true}
             enablePan={false}
             enableRotate={true}
+            enableDamping={true}
+            dampingFactor={0.15}
             minDistance={0.5}
             maxDistance={20}
             target={[0, 0, 0]}
