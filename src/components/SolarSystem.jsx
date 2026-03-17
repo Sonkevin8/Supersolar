@@ -558,14 +558,17 @@ function RocketForm({ planets, onSubmit }) {
       style={{
         background: "#111a",
         color: "#fff",
-        padding: 16,
-        borderRadius: 12,
+        padding: '6px 10px',
+        borderRadius: 8,
         fontFamily: "Orbitron, sans-serif",
-        position: "absolute",
-        left: 20,
-        top: 20,
-        zIndex: 10,
-        minWidth: 260
+        position: "fixed",
+        left: 18,
+        top: 92,
+        zIndex: 30,
+        minWidth: 170,
+        fontSize: '0.85em',
+        boxShadow: '0 1px 6px #0002',
+        lineHeight: 1.3
       }}
       onSubmit={e => {
         e.preventDefault();
@@ -576,23 +579,23 @@ function RocketForm({ planets, onSubmit }) {
         });
       }}
     >
-      <div>
-        <label>Takeoff Planet: </label>
-        <select value={from} onChange={e => setFrom(e.target.value)}>
+      <div style={{ marginBottom: 2 }}>
+        <label style={{ fontWeight: 500 }}>Takeoff: </label>
+        <select value={from} onChange={e => setFrom(e.target.value)} style={{ fontSize: '0.95em', marginLeft: 2 }}>
           {planets.map(p => (
             <option key={p.name} value={p.name}>{p.name}</option>
           ))}
         </select>
       </div>
-      <div>
-        <label>Destination Planet: </label>
-        <select value={to} onChange={e => setTo(e.target.value)}>
+      <div style={{ marginBottom: 2 }}>
+        <label style={{ fontWeight: 500 }}>Destination: </label>
+        <select value={to} onChange={e => setTo(e.target.value)} style={{ fontSize: '0.95em', marginLeft: 2 }}>
           {planets.map(p => (
             <option key={p.name} value={p.name}>{p.name}</option>
           ))}
         </select>
       </div>
-      <button type="submit" style={{marginTop: 10}}>Calculate</button>
+      <button type="submit" style={{ marginTop: 4, fontSize: '0.95em', padding: '2px 10px', borderRadius: 5, border: 'none', background: '#00ffe7', color: '#222', fontWeight: 600, cursor: 'pointer' }}>Calculate</button>
     </form>
   );
 }
@@ -944,6 +947,7 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
   );
 }
 
+
 export default function SolarSystem() {
   const [planetParams, setPlanetParams] = useState(() =>
     planetsData.map((p, pi) => ({
@@ -964,7 +968,22 @@ export default function SolarSystem() {
   const [selectedBody, setSelectedBody] = useState(null);
   const [rocketTransfer, setRocketTransfer] = useState(null);
   const controlsRef = useRef();
-  const [cartoonEarth, setCartoonEarth] = useState(false); // <-- add cartoonEarth state
+  const [cartoonEarth, setCartoonEarth] = useState(false);
+  // Lock controls at boot, unlock when white screen starts showing
+  const [controlsLocked, setControlsLocked] = useState(true);
+  // Simulate white screen fade-in (replace with your real logic)
+  const [showWhiteScreen, setShowWhiteScreen] = useState(true);
+
+  // Example: unlock controls when white screen starts showing (after 2s)
+  useEffect(() => {
+    if (showWhiteScreen) {
+      const timer = setTimeout(() => {
+        setControlsLocked(false);
+        setShowWhiteScreen(false);
+      }, 2000); // 2 seconds, adjust as needed
+      return () => clearTimeout(timer);
+    }
+  }, [showWhiteScreen]);
 
   // dat.GUI setup (same as your code)
   const guiRef = useRef(null);
@@ -1147,23 +1166,82 @@ export default function SolarSystem() {
             )}
           </>
         )}
-        <OrbitControls ref={controlsRef} />
+        <OrbitControls
+          ref={controlsRef}
+          enableZoom={!controlsLocked}
+          enablePan={!controlsLocked}
+          enableRotate={true}
+        />
       </Canvas>
-      <div
-        style={{
-          position: "absolute",
-          left: 20,
-          top: 20,
-          color: "#fff",
-          background: "rgba(0,0,0,0.5)",
-          padding: "8px 16px",
-          borderRadius: "8px",
-          zIndex: 10,
-          fontSize: "1.1em",
-          letterSpacing: "0.08em"
-        }}
-      >
-        Focused: <b>{focus.name}</b>
+      {/* White screen overlay (boot/fade-in) */}
+      {showWhiteScreen && (
+        <div
+          style={{
+            position: "fixed",
+            left: 0,
+            top: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "#fff",
+            opacity: 1,
+            zIndex: 1000,
+            transition: "opacity 0.7s"
+          }}
+        />
+      )}
+      <div style={{
+        position: 'fixed',
+        top: 44,
+        left: 0,
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        zIndex: 20,
+        pointerEvents: 'none'
+      }}>
+        <div
+          style={{
+            marginLeft: 16,
+            color: '#fff',
+            background: 'rgba(0,0,0,0.5)',
+            padding: '4px 12px',
+            borderRadius: '7px',
+            fontSize: '0.98em',
+            letterSpacing: '0.06em',
+            fontWeight: 500,
+            minWidth: 90,
+            pointerEvents: 'auto'
+          }}
+        >
+          Focused: <b>{focus.name}</b>
+        </div>
+        <button
+          style={{
+            marginRight: 16,
+            color: '#fff',
+            background: 'rgba(0,0,0,0.5)',
+            padding: '4px 16px',
+            borderRadius: '7px',
+            fontSize: '0.98em',
+            fontWeight: 500,
+            border: 'none',
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            boxShadow: '0 1px 4px #0002'
+          }}
+          onClick={() => {
+            if (window.guiRef && window.guiRef.current) {
+              window.guiRef.current.show();
+            } else {
+              const guiEl = document.getElementById('gui');
+              if (guiEl) guiEl.style.display = '';
+            }
+          }}
+        >
+          Open Controls
+        </button>
       </div>
     </div>
   );
