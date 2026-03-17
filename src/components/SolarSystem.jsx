@@ -110,6 +110,9 @@ const ORBITAL_PERIODS = {
 };
 
 // Angular speed = 2 * PI / period (period in years, 1s = 1 year in sim)
+
+// Time scaling: 1 real second = N simulated years
+const TIME_SCALE = 0.05; // 0.05 = 1 real second = 0.05 years (about 18 days)
 const planetsData = [
   {
     name: "Mercury",
@@ -431,7 +434,7 @@ function Planet({ data, guiData, setFocus, orbitColor }) {
     : null;
   const meshRef = useRef();
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
+    const t = clock.getElapsedTime() * TIME_SCALE;
     meshRef.current.position.x =
       guiData.orbit * Math.cos(guiData.speed * t + guiData.offset);
     meshRef.current.position.z =
@@ -522,7 +525,7 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   const meshRef = useRef();
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime();
+    const t = clock.getElapsedTime() * TIME_SCALE;
     meshRef.current.position.x =
       (planetSize + moonGuiData.orbit) *
       Math.cos(moonGuiData.speed * t + planetOffset);
