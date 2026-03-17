@@ -119,7 +119,7 @@ const ORBITAL_PERIODS = {
 
 // Time scaling: 1 real second = N simulated years
 const PLANET_TIME_SCALE = 0.01; // Slower for planets
-const MOON_TIME_SCALE = 0.003;  // Even slower for moons
+const MOON_TIME_SCALE = 0.001;  // Much slower for all moons
 const planetsData = [
   {
     name: "Mercury",
@@ -532,12 +532,8 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   const meshRef = useRef();
 
   useFrame(({ clock }) => {
-    // Slow down Mars and Uranus moons further for realism
-    let moonTimeScale = MOON_TIME_SCALE;
-    if (data.planetName === "Mars" || data.planetName === "Uranus") {
-      moonTimeScale = MOON_TIME_SCALE * 0.3; // 3x slower
-    }
-    const t = clock.getElapsedTime() * moonTimeScale;
+    // Slow down all moons for realism
+    const t = clock.getElapsedTime() * MOON_TIME_SCALE;
     meshRef.current.position.x =
       (planetSize + moonGuiData.orbit) *
       Math.cos(moonGuiData.speed * t + planetOffset);
@@ -905,8 +901,8 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
     [size * 0.2 + 0.1, size * 0.18, size * 0.6 - 0.1],
   ];
 
-  // Load realistic Earth texture (day map)
-  const texture = useLoader(THREE.TextureLoader, '/textures/earth_daymap.jpg');
+  // Use the same Earth texture as the main solar system
+  const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.earth);
 
   // Demo cities: [name, lat, lon]
   const demoCities = [
