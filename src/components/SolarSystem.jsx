@@ -532,13 +532,9 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   const meshRef = useRef();
 
   useFrame(({ clock }) => {
-    // Make Mars moons much slower (5% of current), others as before
+    // Make Mars, Neptune, Venus, and Jupiter moons even slower
     let moonTimeScale = MOON_TIME_SCALE;
-    if (data.planetName === "Mars") {
-      moonTimeScale = MOON_TIME_SCALE * 0.05 * 0.05; // 5% of current (0.25% of original)
-    } else if (data.planetName === "Jupiter") {
-      moonTimeScale = MOON_TIME_SCALE * 0.1 * 0.05; // 5% of current (0.5% of original)
-    } else if (["Neptune", "Venus"].includes(data.planetName)) {
+    if (["Mars", "Neptune", "Venus", "Jupiter"].includes(data.planetName)) {
       moonTimeScale = MOON_TIME_SCALE * 0.3; // 3x slower
     }
     const t = clock.getElapsedTime() * moonTimeScale;
@@ -815,7 +811,7 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
   const earthRef = useRef();
   useFrame(({ clock }) => {
     if (earthRef.current) {
-      earthRef.current.rotation.y = clock.getElapsedTime() * 0.0075; // Spin Earth (5% speed)
+      earthRef.current.rotation.y = clock.getElapsedTime() * 0.15; // Spin Earth
     }
     if (cloudRef1.current) {
       cloudRef1.current.position.x = Math.sin(clock.getElapsedTime() * 0.3) * size * 0.5;
@@ -909,19 +905,8 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
     [size * 0.2 + 0.1, size * 0.18, size * 0.6 - 0.1],
   ];
 
-  // Use the same Earth texture as the main solar system, with fallback and error logging
-  let texture = null;
-  try {
-    texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.earth);
-    if (!texture) {
-      // eslint-disable-next-line no-console
-      console.warn('Earth texture failed to load, using fallback color.');
-    }
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('Error loading Earth texture:', e);
-    texture = null;
-  }
+  // Use the same Earth texture as the main solar system
+  const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.earth);
 
   // Demo cities: [name, lat, lon]
   const demoCities = [
@@ -968,11 +953,7 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         {/* Main globe with realistic texture, now spinning */}
         <mesh ref={earthRef}>
           <sphereGeometry args={[size, 64, 64]} />
-          {texture ? (
-            <meshStandardMaterial map={texture} />
-          ) : (
-            <meshStandardMaterial color="#888" />
-          )}
+          <meshStandardMaterial map={texture} />
         </mesh>
         {/* Demo cities as glowing markers */}
         {demoCities.map((city, i) => {
@@ -1059,49 +1040,15 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
         </Html>
       </group>
       {/* OrbitControls for zoom-to-cursor in CartoonEarth */}
-      {(() => {
-        const controlsRef = useRef();
-        const { camera } = useThree();
-        const [animating, setAnimating] = useState(true);
-        // Animate camera to center on Earth when CartoonEarth mounts
-        useEffect(() => {
-          setAnimating(true);
-        }, []);
-        useFrame((state, delta) => {
-          if (controlsRef.current) {
-            controlsRef.current.target.set(0, 0, 0);
-            controlsRef.current.update();
-          }
-          if (camera) {
-            camera.up.set(0, 1, 0);
-            if (animating) {
-              // Smoothly move camera to [0, 0, 8] over 1 second
-              const targetPos = new THREE.Vector3(0, 0, 8);
-              camera.position.lerp(targetPos, Math.min(0.12, delta * 4));
-              camera.lookAt(0, 0, 0);
-              // Stop animating when close enough
-              if (camera.position.distanceTo(targetPos) < 0.01) {
-                camera.position.copy(targetPos);
-                setAnimating(false);
-              }
-            }
-          }
-        });
-        return (
-          <OrbitControls
-            ref={controlsRef}
-            zoomToCursor={!isMobile()}
-            enableZoom={true}
-            enablePan={false}
-            enableRotate={true}
-            enableDamping={true}
-            dampingFactor={0.15}
-            minDistance={0.5}
-            maxDistance={20}
-            target={[0, 0, 0]}
-          />
-        );
-      })()}
+      <OrbitControls
+        zoomToCursor={!isMobile()}
+        enableZoom={true}
+        enablePan={false}
+        enableRotate={true}
+        minDistance={0.5}
+        maxDistance={20}
+        target={[0, 0, 0]}
+      />
     </>
   );
 }
