@@ -9,6 +9,7 @@ function isMobile() {
   return /Mobi|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(window.navigator.userAgent);
 }
 
+// Comet (restored)
 function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
   const meshRef = useRef();
   useFrame(({ clock }) => {
@@ -27,16 +28,17 @@ function Comet({ orbit = 120, speed = 0.04, size = 0.5, color = "#fff" }) {
         <sphereGeometry args={[size, 32, 32]} />
         <meshStandardMaterial color={color} emissive="#fff" />
       </mesh>
-      {/* Optionally add a tail here */}
+      {/* Comet tail */}
+      <mesh position={[0, 0, -size * 2]}>
+        <coneGeometry args={[size * 0.3, size * 2.5, 16]} />
+        <meshStandardMaterial color="#fff" transparent opacity={0.6} />
+      </mesh>
     </group>
   );
 }
 
 // AsteroidBelt
 function AsteroidBelt({ count = 50, inner = 35, outer = 50 }) {
-  // ...existing code...
-
-  export default Comet;
   const asteroids = useMemo(() => {
     const arr = [];
     for (let i = 0; i < count; i++) {
@@ -1052,7 +1054,6 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
 }
 
 
-
 export default function SolarSystem() {
   const [planetParams, setPlanetParams] = useState(() =>
     planetsData.map((p, pi) => ({
@@ -1077,11 +1078,6 @@ export default function SolarSystem() {
   // Lock controls at boot, unlock when white screen is hidden
   const [controlsLocked, setControlsLocked] = useState(true);
   const [showWhiteScreen, setShowWhiteScreen] = useState(true);
-  // Camera animation state
-  const [cameraAnimating, setCameraAnimating] = useState(false);
-  const [earthView, setEarthView] = useState(false);
-  const cameraTargetRef = useRef([0, 0, 0]);
-  const cameraRef = useRef();
 
   // Always lock controls on mount
   useEffect(() => {
@@ -1222,54 +1218,23 @@ export default function SolarSystem() {
     };
   }, [planetParams]);
 
-
-  // Smooth camera animation to Earth
   useEffect(() => {
-    if (focus.name === "Earth" && !cartoonEarth) {
-      // Animate camera to Earth
-      setCameraAnimating(true);
-      setEarthView(true);
-    } else {
-      setEarthView(false);
-    }
-  }, [focus, cartoonEarth]);
-
-  useFrame(({ camera }) => {
-    if (cameraAnimating && focus.name === "Earth" && controlsRef.current && !cartoonEarth) {
-      // Target position: halfway zoom, centered on Earth
-      const target = focus.position;
-      const desiredDistance = 8; // halfway zoom (Earth size is 1)
-      const camDir = new THREE.Vector3().subVectors(camera.position, controlsRef.current.target).normalize();
-      const desiredPos = new THREE.Vector3(...target).add(camDir.multiplyScalar(desiredDistance));
-      // Smoothly interpolate camera position
-      camera.position.lerp(desiredPos, 0.04);
-      // Smoothly interpolate controls target
-      controlsRef.current.target.lerp(new THREE.Vector3(...target), 0.08);
+    if (controlsRef.current) {
+      controlsRef.current.target.set(...focus.position);
       controlsRef.current.update();
-      // If close enough, stop animating
-      if (camera.position.distanceTo(desiredPos) < 0.05 && controlsRef.current.target.distanceTo(new THREE.Vector3(...target)) < 0.05) {
-        camera.position.copy(desiredPos);
-        controlsRef.current.target.copy(new THREE.Vector3(...target));
-        controlsRef.current.update();
-        setCameraAnimating(false);
-      }
     }
-  });
+  }, [focus]);
 
   return (
     <div style={{ width: "100vw", height: "92vh", position: "relative" }}>
       <RocketForm planets={planetsData} onSubmit={setRocketTransfer} />
       <InfoPopup body={selectedBody} onClose={() => setSelectedBody(null)} />
-      <Canvas camera={{ position: [0, 40, 220], fov: 55 }} style={{ background: '#000' }} ref={cameraRef}>
+      <Canvas camera={{ position: [0, 40, 220], fov: 55 }} style={{ background: '#000' }}>
         {cartoonEarth ? (
           <CartoonEarth
             position={[0, 0, 0]}
             size={3}
-            onClose={() => {
-              setCartoonEarth(false);
-              setEarthView(false);
-              setFocus({ position: [0, 0, 0], name: "Sun" });
-            }}
+            onClose={() => setCartoonEarth(false)}
           />
         ) : (
           <>
@@ -1292,6 +1257,8 @@ export default function SolarSystem() {
                   setFocus={pos => {
                     setFocus(pos);
                     setSelectedBody({ ...p, ...planetParams[i] });
+                    // If Earth is clicked, show cartoon version
+                    if (p.name === "Earth") setCartoonEarth(true);
                   }}
                   orbitColor={orbitColors[i]}
                 />
@@ -1316,11 +1283,11 @@ export default function SolarSystem() {
         )}
         <OrbitControls
           ref={controlsRef}
-          enableZoom={earthView ? true : !controlsLocked}
-          enablePan={earthView ? false : !controlsLocked}
+          enableZoom={!controlsLocked}
+          enablePan={!controlsLocked}
           enableRotate={true}
-          minDistance={earthView ? 2.5 : 1}
-          maxDistance={earthView ? 20 : 200}
+          minDistance={1}
+          maxDistance={200}
           zoomToCursor={!isMobile()}
         />
       </Canvas>
