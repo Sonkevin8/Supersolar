@@ -402,12 +402,12 @@ function InfoPopup({ body, onClose }) {
 }
 
 // MilkyWay
-function MilkyWay({ dim = false }) {
+function MilkyWay() {
   const texture = useLoader(THREE.TextureLoader, PLANET_TEXTURES.milkyway);
   return (
     <mesh scale={[-1, 1, 1]}>
       <sphereGeometry args={[200, 64, 64]} />
-      <meshBasicMaterial map={texture} side={THREE.BackSide} opacity={dim ? 0.18 : 0.7} transparent />
+      <meshBasicMaterial map={texture} side={THREE.BackSide} />
     </mesh>
   );
 }
@@ -526,7 +526,12 @@ function Moon({ data, planetSize, planetOffset, moonGuiData, setFocus, parentRef
   const meshRef = useRef();
 
   useFrame(({ clock }) => {
-    const t = clock.getElapsedTime() * MOON_TIME_SCALE;
+    // Slow down Mars and Uranus moons further for realism
+    let moonTimeScale = MOON_TIME_SCALE;
+    if (data.planetName === "Mars" || data.planetName === "Uranus") {
+      moonTimeScale = MOON_TIME_SCALE * 0.3; // 3x slower
+    }
+    const t = clock.getElapsedTime() * moonTimeScale;
     meshRef.current.position.x =
       (planetSize + moonGuiData.orbit) *
       Math.cos(moonGuiData.speed * t + planetOffset);
@@ -1158,7 +1163,7 @@ export default function SolarSystem() {
           />
         ) : (
           <>
-            <MilkyWay dim={focus.name === "Earth"} />
+            <MilkyWay />
             <ambientLight intensity={0.6} />
             <pointLight position={[0, 0, 0]} intensity={2.6} color="#fffde0" />
             <Sun size={3.2} setFocus={setFocus} />
