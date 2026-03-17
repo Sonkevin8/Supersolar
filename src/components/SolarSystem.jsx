@@ -1062,14 +1062,29 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
       {(() => {
         const controlsRef = useRef();
         const { camera } = useThree();
-        // Force target to [0,0,0] every frame and set camera up
-        useFrame(() => {
+        const [animating, setAnimating] = useState(true);
+        // Animate camera to center on Earth when CartoonEarth mounts
+        useEffect(() => {
+          setAnimating(true);
+        }, []);
+        useFrame((state, delta) => {
           if (controlsRef.current) {
             controlsRef.current.target.set(0, 0, 0);
             controlsRef.current.update();
           }
           if (camera) {
             camera.up.set(0, 1, 0);
+            if (animating) {
+              // Smoothly move camera to [0, 0, 8] over 1 second
+              const targetPos = new THREE.Vector3(0, 0, 8);
+              camera.position.lerp(targetPos, Math.min(0.12, delta * 4));
+              camera.lookAt(0, 0, 0);
+              // Stop animating when close enough
+              if (camera.position.distanceTo(targetPos) < 0.01) {
+                camera.position.copy(targetPos);
+                setAnimating(false);
+              }
+            }
           }
         });
         return (
