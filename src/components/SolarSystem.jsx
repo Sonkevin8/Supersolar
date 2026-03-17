@@ -901,8 +901,36 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
     [size * 0.2 + 0.1, size * 0.18, size * 0.6 - 0.1],
   ];
 
-  // Load realistic cartoon-style texture (replace with a real map if available)
-  const texture = useLoader(THREE.TextureLoader, '/textures/cartoon_earth_realistic.svg');
+  // Load realistic Earth texture (day map)
+  const texture = useLoader(THREE.TextureLoader, '/textures/earth_daymap.jpg');
+
+  // Demo cities: [name, lat, lon]
+  const demoCities = [
+    ["New York", 40.7128, -74.0060],
+    ["London", 51.5074, -0.1278],
+    ["Tokyo", 35.6895, 139.6917],
+    ["Sydney", -33.8688, 151.2093],
+    ["Cairo", 30.0444, 31.2357],
+  ];
+
+  // Convert lat/lon to 3D position on sphere
+  function latLonToVec3(lat, lon, radius) {
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lon + 180) * (Math.PI / 180);
+    return [
+      -radius * Math.sin(phi) * Math.cos(theta),
+      radius * Math.cos(phi),
+      radius * Math.sin(phi) * Math.sin(theta)
+    ];
+  }
+
+  // Demo roads: pairs of city indices
+  const demoRoads = [
+    [0, 1], // New York - London
+    [1, 2], // London - Tokyo
+    [2, 3], // Tokyo - Sydney
+    [1, 4], // London - Cairo
+  ];
   // Handle zoom with mouse wheel or pinch gesture
   useEffect(() => {
     const handleWheel = (e) => {
@@ -918,11 +946,36 @@ function CartoonEarth({ position = [0,0,0], size = 3, onClose }) {
       <group position={position}>
         {/* Add a directional light for cartoon Earth */}
         <directionalLight position={[5, 10, 7]} intensity={1.2} castShadow />
-        {/* Main cartoon globe with realistic texture */}
+        {/* Main globe with realistic texture */}
         <mesh>
           <sphereGeometry args={[size, 64, 64]} />
           <meshStandardMaterial map={texture} />
         </mesh>
+        {/* Demo cities as glowing markers */}
+        {demoCities.map((city, i) => {
+          const pos = latLonToVec3(city[1], city[2], size + 0.04);
+          return (
+            <mesh key={city[0]} position={pos}>
+              <sphereGeometry args={[0.07, 16, 16]} />
+              <meshStandardMaterial color="#00ffe7" emissive="#00ffe7" emissiveIntensity={1.2} />
+              <Html distanceFactor={8} style={{ color: '#fff', fontFamily: 'Orbitron, sans-serif', fontSize: '0.7em', textShadow: '0 0 6px #00ffe7' }} position={[0, 0.13, 0]}>{city[0]}</Html>
+            </mesh>
+          );
+        })}
+        {/* Demo roads as lines between cities */}
+        {demoRoads.map(([a, b], i) => {
+          const start = latLonToVec3(demoCities[a][1], demoCities[a][2], size + 0.04);
+          const end = latLonToVec3(demoCities[b][1], demoCities[b][2], size + 0.04);
+          return (
+            <Line
+              key={i}
+              points={[start, end]}
+              color="#ffb347"
+              lineWidth={2}
+              dashed={false}
+            />
+          );
+        })}
         {/* Animated clouds, offset outward (could be improved with real cloud map) */}
         <mesh ref={cloudRef1} position={[0, size * 0.8, 0]}>
           <sphereGeometry args={[size * 0.13, 12, 12]} />
