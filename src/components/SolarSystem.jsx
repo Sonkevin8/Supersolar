@@ -969,17 +969,21 @@ export default function SolarSystem() {
   const [rocketTransfer, setRocketTransfer] = useState(null);
   const controlsRef = useRef();
   const [cartoonEarth, setCartoonEarth] = useState(false);
-  // Lock controls at boot, unlock when white screen starts showing
+  // Lock controls at boot, unlock when white screen is hidden
   const [controlsLocked, setControlsLocked] = useState(true);
-  // Simulate white screen fade-in (replace with your real logic)
   const [showWhiteScreen, setShowWhiteScreen] = useState(true);
 
-  // Example: unlock controls when white screen starts showing (after 2s)
+  // Always lock controls on mount
+  useEffect(() => {
+    setControlsLocked(true);
+  }, []);
+
+  // Unlock controls only after white screen is hidden
   useEffect(() => {
     if (showWhiteScreen) {
       const timer = setTimeout(() => {
-        setControlsLocked(false);
         setShowWhiteScreen(false);
+        setControlsLocked(false);
       }, 2000); // 2 seconds, adjust as needed
       return () => clearTimeout(timer);
     }
@@ -1171,6 +1175,8 @@ export default function SolarSystem() {
           enableZoom={!controlsLocked}
           enablePan={!controlsLocked}
           enableRotate={true}
+          minDistance={30}
+          maxDistance={350}
         />
       </Canvas>
       {/* White screen overlay (boot/fade-in) */}
@@ -1199,37 +1205,42 @@ export default function SolarSystem() {
         justifyContent: 'space-between',
         alignItems: 'center',
         zIndex: 20,
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        fontFamily: 'Orbitron, sans-serif',
+        fontSize: '0.85em',
+        color: '#fff',
+        fontWeight: 500
       }}>
         <div
           style={{
             marginLeft: 16,
-            color: '#fff',
             background: 'rgba(0,0,0,0.5)',
             padding: '4px 12px',
             borderRadius: '7px',
-            fontSize: '0.98em',
-            letterSpacing: '0.06em',
-            fontWeight: 500,
             minWidth: 90,
-            pointerEvents: 'auto'
+            pointerEvents: 'auto',
+            fontFamily: 'Orbitron, sans-serif',
+            fontSize: '0.95em',
+            color: '#fff',
+            fontWeight: 500
           }}
         >
-          Focused: <b>{focus.name}</b>
+          <span style={{ fontWeight: 500 }}>Focused:</span> <span style={{ fontWeight: 600 }}>{focus.name}</span>
         </div>
         <button
           style={{
             marginRight: 16,
-            color: '#fff',
             background: 'rgba(0,0,0,0.5)',
-            padding: '4px 16px',
-            borderRadius: '7px',
-            fontSize: '0.98em',
-            fontWeight: 500,
+            padding: '2px 10px',
+            borderRadius: 5,
+            fontSize: '0.95em',
+            fontWeight: 600,
             border: 'none',
             cursor: 'pointer',
             pointerEvents: 'auto',
-            boxShadow: '0 1px 4px #0002'
+            boxShadow: '0 1px 4px #0002',
+            color: '#fff',
+            fontFamily: 'Orbitron, sans-serif'
           }}
           onClick={() => {
             if (window.guiRef && window.guiRef.current) {
