@@ -1154,7 +1154,7 @@ export default function SolarSystem() {
     <div style={{ width: "100vw", height: "92vh", position: "relative" }}>
       <RocketForm planets={planetsData} onSubmit={setRocketTransfer} />
       <InfoPopup body={selectedBody} onClose={() => setSelectedBody(null)} />
-      <Canvas camera={{ position: [0, 40, 220], fov: 55 }}>
+      <Canvas camera={{ position: [0, 40, 220], fov: 55 }} style={{ background: '#000' }}>
         {cartoonEarth ? (
           <CartoonEarth
             position={[0, 0, 0]}
