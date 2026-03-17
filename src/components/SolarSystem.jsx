@@ -1211,8 +1211,8 @@ export default function SolarSystem() {
           enableZoom={!controlsLocked}
           enablePan={!controlsLocked}
           enableRotate={true}
-          minDistance={30}
-          maxDistance={350}
+          minDistance={1}
+          maxDistance={200}
         />
       </Canvas>
       {/* White screen overlay (boot/fade-in) */}
